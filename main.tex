@@ -322,9 +322,17 @@ The boundary conditions for the solid are also Dirichlet b.c. for displacement a
 
 \subsection{Temporal Discretization}
 
-NEWMARK
+Both solid and fluid phases require a transient description. In the fluid, the temporal discretization is achieved through a first order finite difference, given by: \\
 
-FINITE DIFFERENCE IN TIME FOR THE FLUID
+\begin{equation}
+	\frac{\partial \mathbf{u}}{ \partial t} = \frac{M\mathbf{u}^{n+1} - M\mathbf{u}^{n}}{\Delta t}
+\end{equation} \\
+
+\noindent where $M$ is the mass matrix derived from the galerkin discretization. The solution to descript the transient response for the solid phase uses a second order implicit finite difference in time (which is special case of the Newmark method with $\beta = 0.25$ and $\gamma = 0.5$) given by: \\
+
+\begin{equation}
+	\frac{\partial^2 \mathbf{u}}{ \partial t^2} = \frac{M \mathbf{u}^{n+1} + M( - 2 \mathbf{u}_n + \mathbf{u}_{n-1})}{\Delta t^2}
+\end{equation} \\
 
 \subsection{Implementation Details}
 
@@ -488,6 +496,51 @@ A single mesh is used to represent the whole domain, where the different phases 
 \end{figure}
 
 When considering the numerical implementation, a renumbering of nodes was found convenient. Several matrix multiplications, and a few linear systems of equations, need to be accomplished, and the necessary matrices are smaller, and more easily assembled if the nodes are grouped. Therefore, a renumbering of nodes in the order of interface, solid phase, liquid phase vertices and liquid phase edges was done. That is, from zero to number of interface nodes, all nodes belong to the interface, and so on. The interface nodes, of course, belong both to the solid phase and fluid phase.
+
+The final form of the linear system of equations for the fluid and solid phases is given below: \\
+
+\[
+\begin{array}{c@{\qquad}c}
+	\begin{bmatrix}
+		\dfrac{M}{\Delta t} + K_x & 0 & G_x \\
+		0 & \dfrac{M}{\Delta t} + K_y & G_y \\
+		D_x & D_y & 0
+	\end{bmatrix}
+	{\renewcommand{\arraystretch}{1.4}
+		\begin{bmatrix}
+			v_x^{n+1} \\
+			v_y^{n+1} \\
+			p^{n+1}
+		\end{bmatrix}
+	}
+	=
+	{\renewcommand{\arraystretch}{1.4}
+		\begin{bmatrix}
+			M v_x^n \\
+			M v_y^n \\
+			0
+		\end{bmatrix}
+	}
+	&
+	\begin{bmatrix}
+		K + \dfrac{M}{\Delta t^2} & 0 \\
+		0 & K + \dfrac{M}{\Delta t^2}
+	\end{bmatrix}
+	{\renewcommand{\arraystretch}{1.4}
+		\begin{bmatrix}
+			u^{n+1}_x \\
+			u^{n+1}_y
+		\end{bmatrix}
+	}
+	=
+	{\renewcommand{\arraystretch}{1.4}
+		\begin{bmatrix}
+			\dfrac{M (2 u_x^n - u_x^{n-1})}{\Delta t^2} + f_x \\
+			\dfrac{M (2 u_y^n - u_y^{n-1})}{\Delta t^2} + f_y
+		\end{bmatrix}
+	}
+\end{array}
+\] \\
 
 The linear system of equations are solved sequentially in a staggered fashion. The fluid velocity and pressure fields are solved, and the obtained values are used to calculate the external traction acting upon the solid at the fluid-solid interface. In turn, the solid displacement is solved, and the solid velocity calculated through the following equation:
 
