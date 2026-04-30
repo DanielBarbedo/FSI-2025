@@ -26,8 +26,8 @@
 \usetikzlibrary[quotes, calc, arrows.meta, plotmarks]
 % \usetikzlibrary{external}
 % \tikzexternalize[prefix=tikz/]
-\usepgfplotslibrary{external}
-\tikzexternalize
+%\usepgfplotslibrary{external}
+%\tikzexternalize
 
 \makeatletter
 \renewcommand*\env@matrix[1][\arraystretch]{%
@@ -265,17 +265,72 @@ The loads applied to the solid, at the fluid-solid interface, are derived from t
 
 Both the Navier-Stokes equations and the dynamic momentum balance of the solid are solved through the finite element method, using the Galerkin discretization. The convective term of the Navier-Stokes equations is non-linear term. This term can generate instability at higher Reynolds numbers when used directly after the Galerkin discretization. In order to avoid this instability, this term is discretized explicitly through a first order semi-Lagrangian method \cite{anjos_one_2022}, which is unconditionally stable.
 
-Both the fluid and solid are represented by a six-node triangular finite element. In order to respect the LBB condition, the fluid has its velocity assigned to all six nodes, and the pressure calculated only on the three nodes located on the vertices of the triangle (Element P2P1 \cite{arnold1984}).
+\begin{figure}
+	\centering
+	\begin{tikzpicture}[every node/.style={font=\scriptsize}]
+		\pgfmathsetmacro\l{3}
+		\coordinate (a) at (0, 0);
+		\coordinate (b) at (\l, 0);
+		\coordinate (c) at (\l/2, \l * 1.73 / 2);		
+		\coordinate (d) at (\l/2, 0);
+		\coordinate (e) at (\l * 0.75, \l * 1.73 / 4);
+		\coordinate (f) at (\l * 0.25, \l * 1.73 / 4);
+		\draw[] (a) -- (b) -- (c) -- cycle;
+		\fill[red] (a) circle (2pt);
+		\fill[red] (b) circle (2pt);
+		\fill[red] (c) circle (2pt);
+		\fill[blue] (a) circle (1pt);
+		\fill[blue] (b) circle (1pt);
+		\fill[blue] (c) circle (1pt);
+		\fill[blue] (d) circle (1pt);
+		\fill[blue] (e) circle (1pt);
+		\fill[blue] (f) circle (1pt);
+		\node[left] at (a) {1};
+		\node[right] at (b) {2};
+		\node[right] at (c) {3};
+		\node[below] at (d) {4};
+		\node[right] at (e) {5};
+		\node[left] at (f) {6};		
+		\node[right] at (1.25 * \l, 6 * 0.15 * \l) {$N_1 = L_1 (2 L_1 - 1)$};
+		\node[right] at (1.25 * \l, 5 * 0.15 * \l) {$N_2 = L_2 (2 L_2 - 1)$};
+		\node[right] at (1.25 * \l, 4 * 0.15 * \l) {$N_3 = L_3 (2 L_3 - 1)$};
+		\node[right] at (1.25 * \l, 3 * 0.15 * \l) {$N_4 = 4 L_1 L_2$};
+		\node[right] at (1.25 * \l, 2 * 0.15 * \l) {$N_5 = 4 L_2 L_3$};
+		\node[right] at (1.25 * \l, 0.15 * \l) {$N_6 = 4 L_1 L_3$};
+	\end{tikzpicture}
+	\caption{Quadratic triangle node distribution and associated interpolation functions. In the fluid, the pressure is evaluated only at the nodes marked red}
+	\label{fig:tri}
+\end{figure}
+
+Both the fluid and the solid are discretized using a six-node triangular finite element presented in Fig.~\ref{fig:tri}, with the corresponding interpolation functions also shown in the figure. In order to respect the LBB condition, the fluid has its velocity assigned to all six nodes, and the pressure calculated only on the three nodes located on the vertices of the triangle (Element P2P1 \cite{arnold1984}).
+
+\subsection{Semi-Lagrangian}
+
+A Lagrangian representation follows the material particles (and the associated quantities of interest) over time, as opposed to the Eulerian representation that is concerned with the quantities at a fixed position. The semi-Lagrangian method uses a Lagrangian representation of fluid particles, but the set of particles change at each time step. In the finite element method, the domain is discrete, and the quantities are evaluated at the nodes. Therefore, in the semi-Lagrangian method, the focus is on identifying the set of particles that arrive at the mesh nodes at each time step, using the following equation:
+
+\begin{equation}
+	x_d = x_n + \mathbf{v} \Delta t
+\end{equation}
+
+\noindent where $x_d$ is the departure point of the fluid particle that is going to arrive at the position $x_n$ occupied by a mesh node, after a $\Delta t$ amount of time. The quantities, the velocity components in the case of the advective term of the momentum equation, presented at the position $x_d$ are then assigned to the position $x_n$.
+
+
 
 The boundary conditions for the fluid are Dirichlet b.c. for velocity at the walls and at the inflow. Also Dirichlet b.c. for pressure at the outflow, and Neumann for the velocity. At the interface, Robin b.c. were used, setting the velocity equal to the solid velocity.
 
 The boundary conditions for the solid are also Dirichlet b.c. for displacement at the fixed positions. At the interface, the traction is applied.
 
+\subsection{Temporal Discretization}
+
+NEWMARK
+
+FINITE DIFFERENCE IN TIME FOR THE FLUID
+
 \subsection{Implementation Details}
 
 In order for the fluid and the solid to interact, they need to share boundaries. To represent that, two strategies can be implemented: The creation of two separate finite element meshes representing each material, or a single finite element mesh in which zones are assigned to either material.
 
-The first option allows for an easier matrix assembly of each material and subsequent linear system solving, but incurs on the difficulties associated with connecting the solid and fluid degrees of freedom, specially on unstructured meshes, which are tipically more flexible and adequate to a more diverse set of problems
+The first option allows for an easier matrix assembly of each material and subsequent linear system solving, but incurs on the difficulties associated with connecting the solid and fluid degrees of freedom, specially on unstructured meshes, which are typically more flexible and adequate to a more diverse set of problems
 
 In the second option, the fluid and solid share nodes, so the connection is a lot easier, but it leads to a more complex "bookkeeping" of node numbering, matrix assembly, and the construction of the linear system of equations. This is the approach used in this work.
 
