@@ -77,7 +77,10 @@ Marcelo A. Savi$^a$ \\ email:\href{savi@mecanica.coppe.ufrj.br}{savi@mecanica.co
 
 In the interest of accurately representing the fluid induced vibrations on piping, and therefore the available energy to be converted into electric energy to be stored and remotely power smart materials, a flow-structure simulation using the finite element method to represent both the flow and the solid structure was developed.
 
-Using this numerical tool, several Reynolds numbers were simulated, and the displacements and forces in the solid structure produced by the flow measured. In turn, an oscillator function similar to a van der pol oscillator was used to fit the displacement and force data as a function of the Reynolds number, producing an accurate representation of the flow-structure interaction induced vibrations for a given Reynolds range that is accurate, readily available, and does not require lengthy numerical simulations.
+
+This work presents a methodology for the numerical simulation of fluid–structure interaction (FSI), along with its verification. The fluid phase is governed by the Navier–Stokes equations, solved using the finite element method on an unstructured mesh, with a first-order semi-Lagrangian scheme employed for the discretization of the nonlinear convective term. The solid phase is modeled through the discretized balance of momentum equation, adopting either a linear elastic model or a Saint-Venant–Kirchhoff constitutive law. While the solid is described in a Lagrangian formulation, the fluid domain is expressed in an Eulerian framework; to consistently account for mesh motion, an Arbitrary Lagrangian–Eulerian (ALE) approach is employed. The numerical implementation is first verified independently for each phase and subsequently for the coupled problem. Finally, several FSI test cases are presented, encompassing a range of material properties and flow conditions.
+
+%Using this numerical tool, several Reynolds numbers were simulated, and the displacements and forces in the solid structure produced by the flow measured. In turn, an oscillator function similar to a van der pol oscillator was used to fit the displacement and force data as a function of the Reynolds number, producing an accurate representation of the flow-structure interaction induced vibrations for a given Reynolds range that is accurate, readily available, and does not require lengthy numerical simulations.
 
 \section{Governing Equations}
 
@@ -306,11 +309,11 @@ Both the fluid and the solid are discretized using a six-node triangular finite 
 
 \subsection{Semi-Lagrangian}
 
-A Lagrangian representation follows the material particles (and the associated quantities of interest) over time, as opposed to the Eulerian representation that is concerned with the quantities at a fixed position. The semi-Lagrangian method uses a Lagrangian representation of fluid particles, but the set of particles change at each time step. In the finite element method, the domain is discrete, and the quantities are evaluated at the nodes. Therefore, in the semi-Lagrangian method, the focus is on identifying the set of particles that arrive at the mesh nodes at each time step, using the following equation:
+A Lagrangian representation follows the material particles (and the associated quantities of interest) over time, as opposed to the Eulerian representation that is concerned with the quantities at a fixed position. The semi-Lagrangian method uses a Lagrangian representation of fluid particles, but the set of particles change at each time step. In the finite element method, the domain is discrete, and the quantities are evaluated at the nodes. Therefore, in the semi-Lagrangian method, the focus is on identifying the set of particles that arrive at the mesh nodes at each time step, using the following equation: \\
 
 \begin{equation}
 	x_d = x_n + \mathbf{v} \Delta t
-\end{equation}
+\end{equation} \\
 
 \noindent where $x_d$ is the departure point of the fluid particle that is going to arrive at the position $x_n$ occupied by a mesh node, after a $\Delta t$ amount of time. The quantities, the velocity components in the case of the advective term of the momentum equation, presented at the position $x_d$ are then assigned to the position $x_n$.
 
@@ -328,11 +331,33 @@ Both solid and fluid phases require a transient description. In the fluid, the t
 	\frac{\partial \mathbf{u}}{ \partial t} = \frac{M\mathbf{u}^{n+1} - M\mathbf{u}^{n}}{\Delta t}
 \end{equation} \\
 
-\noindent where $M$ is the mass matrix derived from the galerkin discretization. The solution to descript the transient response for the solid phase uses a second order implicit finite difference in time (which is special case of the Newmark method with $\beta = 0.25$ and $\gamma = 0.5$) given by: \\
+\noindent where $M$ is the mass matrix derived from the Galerkin discretization. The method utilized to describe the transient response for the solid phase is the Newmark method REFERENCIA. In the Newmark method, at each time step both the acceleration and velocity are calculated through:
 
 \begin{equation}
-	\frac{\partial^2 \mathbf{u}}{ \partial t^2} = \frac{M \mathbf{u}^{n+1} + M( - 2 \mathbf{u}_n + \mathbf{u}_{n-1})}{\Delta t^2}
+	\mathbf{a} = \frac{\mathbf{u}^n - \mathbf{u}^{n-1} - \mathbf{v}^{n-1} \Delta t - ( 0.5 - \beta)   \mathbf{a}^{n-1}\Delta t^2}{\beta \Delta t^2}
 \end{equation} \\
+
+\noindent and \\
+
+\begin{equation}
+	\mathbf{v} = \mathbf{v}^{n-1} + [ (1 - \gamma) \mathbf{a}^{n-1} + \gamma \mathbf{a}^n]\Delta t 
+\end{equation} \\
+
+\noindent where $\beta$ and $\gamma$ are input parameters. $\frac{M}{\Delta t^2}$ is added to the left-hand side of the linear system of equations, and $M\mathbf{a}$ is added to the right-hand side (the loading), where $M$ is the mass matrix derived from the solid assembly.
+
+For the Saint-Venant-Kirchoff material, the values selected were $\beta = 0.5$ and $\gamma = 0.5$, due to their unconditional stability. When a linear-elastic material is chosen, the values $\beta = 0.25$ and $\gamma = 0.5$ are picked, which simplify the method to a second order implicit finite difference in time.
+
+%given by \\
+
+%\begin{equation}
+%	\frac{\partial^2 \mathbf{u}}{ \partial t^2} = \frac{M \mathbf{u}^{n+1} + M( - 2 \mathbf{u}_n + \mathbf{u}_{n-1})}{\Delta t^2}
+%\end{equation} \\
+
+%\noindent where $M$ is the mass matrix derived from the Galerkin discretization. The method utilized to describe the transient response for the solid phase uses a second order implicit finite difference in time (which is special case of the Newmark method with $\beta = 0.25$ and $\gamma = 0.5$) given by: \\
+%
+%\begin{equation}
+%	\frac{\partial^2 \mathbf{u}}{ \partial t^2} = \frac{M \mathbf{u}^{n+1} + M( - 2 \mathbf{u}_n + \mathbf{u}_{n-1})}{\Delta t^2}
+%\end{equation} \\
 
 \subsection{Implementation Details}
 
