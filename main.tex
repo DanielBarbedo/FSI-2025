@@ -77,6 +77,14 @@ Marcelo A. Savi$^a$ \\ email:\href{savi@mecanica.coppe.ufrj.br}{savi@mecanica.co
 
 In the interest of accurately representing the fluid induced vibrations on piping, and therefore the available energy to be converted into electric energy to be stored and remotely power smart materials, a flow-structure simulation using the finite element method to represent both the flow and the solid structure was developed.
 
+Fluid–structure interaction (FSI) phenomena are ubiquitous across a wide range of engineering applications, from airflow induced by fans in condensers and evaporators, to internal flows in piping systems, to wind acting on turbines, and water interacting with ship hulls and propellers. Many of these interactions warrant detailed analysis due to their direct impact on system performance. For instance, aerodynamic forces on wind turbines strongly influence power generation, just as hydrodynamic forces are central to the efficiency of wave-energy converters. To accurately capture these effects, a numerical FSI framework has been developed and implemented.
+
+Fluid–structure interaction is inherently a two-way coupled problem. The fluid exerts dynamic loads on the structure through pressure and viscous stresses, inducing deformation or motion. In turn, the structural response modifies the fluid domain boundaries, altering the flow field and consequently the loads acting on the structure. This feedback loop can lead to complex dynamic behavior and introduces additional concerns such as fatigue and elevated stresses, particularly in structures subjected to extreme operating or weather conditions.
+
+
+
+There are a number of existing strategies to describe the fluid-structure interaction. 
+
 
 This work presents a methodology for the numerical simulation of fluid–structure interaction (FSI), along with its verification. The fluid phase is governed by the Navier–Stokes equations, solved using the finite element method on an unstructured mesh, with a first-order semi-Lagrangian scheme employed for the discretization of the nonlinear convective term. The solid phase is modeled through the discretized balance of momentum equation, adopting either a linear elastic model or a Saint-Venant–Kirchhoff constitutive law. While the solid is described in a Lagrangian formulation, the fluid domain is expressed in an Eulerian framework; to consistently account for mesh motion, an Arbitrary Lagrangian–Eulerian (ALE) approach is employed. The numerical implementation is first verified independently for each phase and subsequently for the coupled problem. Finally, several FSI test cases are presented, encompassing a range of material properties and flow conditions.
 
@@ -307,6 +315,10 @@ Both the Navier-Stokes equations and the dynamic momentum balance of the solid a
 
 Both the fluid and the solid are discretized using a six-node triangular finite element presented in Fig.~\ref{fig:tri}, with the corresponding interpolation functions also shown in the figure. In order to respect the LBB condition, the fluid has its velocity assigned to all six nodes, and the pressure calculated only on the three nodes located on the vertices of the triangle (Element P2P1 \cite{arnold1984}).
 
+The boundary conditions for the fluid are Dirichlet b.c. for velocity at the walls and at the inflow. Also Dirichlet b.c. for pressure at the outflow, and Neumann for the velocity. At the interface, Robin b.c. were used, setting the velocity equal to the solid velocity.
+
+The boundary conditions for the solid are also Dirichlet b.c. for displacement at the fixed positions. At the interface, the traction is applied.
+
 \subsection{Semi-Lagrangian}
 
 A Lagrangian representation follows the material particles (and the associated quantities of interest) over time, as opposed to the Eulerian representation that is concerned with the quantities at a fixed position. The semi-Lagrangian method uses a Lagrangian representation of fluid particles, but the set of particles change at each time step. In the finite element method, the domain is discrete, and the quantities are evaluated at the nodes. Therefore, in the semi-Lagrangian method, the focus is on identifying the set of particles that arrive at the mesh nodes at each time step, using the following equation: \\
@@ -317,12 +329,6 @@ A Lagrangian representation follows the material particles (and the associated q
 
 \noindent where $x_d$ is the departure point of the fluid particle that is going to arrive at the position $x_n$ occupied by a mesh node, after a $\Delta t$ amount of time. The quantities, the velocity components in the case of the advective term of the momentum equation, presented at the position $x_d$ are then assigned to the position $x_n$.
 
-
-
-The boundary conditions for the fluid are Dirichlet b.c. for velocity at the walls and at the inflow. Also Dirichlet b.c. for pressure at the outflow, and Neumann for the velocity. At the interface, Robin b.c. were used, setting the velocity equal to the solid velocity.
-
-The boundary conditions for the solid are also Dirichlet b.c. for displacement at the fixed positions. At the interface, the traction is applied.
-
 \subsection{Temporal Discretization}
 
 Both solid and fluid phases require a transient description. In the fluid, the temporal discretization is achieved through a first order finite difference, given by: \\
@@ -331,7 +337,7 @@ Both solid and fluid phases require a transient description. In the fluid, the t
 	\frac{\partial \mathbf{u}}{ \partial t} = \frac{M\mathbf{u}^{n+1} - M\mathbf{u}^{n}}{\Delta t}
 \end{equation} \\
 
-\noindent where $M$ is the mass matrix derived from the Galerkin discretization. The method utilized to describe the transient response for the solid phase is the Newmark method REFERENCIA. In the Newmark method, at each time step both the acceleration and velocity are calculated through:
+\noindent where $M$ is the mass matrix derived from the Galerkin discretization. The method utilized to describe the transient response for the solid phase is the Newmark method REFERENCIA. In the Newmark method, at each time step both the acceleration and velocity are calculated through: \\
 
 \begin{equation}
 	\mathbf{a} = \frac{\mathbf{u}^n - \mathbf{u}^{n-1} - \mathbf{v}^{n-1} \Delta t - ( 0.5 - \beta)   \mathbf{a}^{n-1}\Delta t^2}{\beta \Delta t^2}
@@ -618,7 +624,38 @@ In order to verify the solid part of the code, a test case with no fluid was exe
 	\label{fig:solid beam}
 \end{figure}
 
-The simulation was executed with a mesh of NUMBER nodes and NUMBER elements, over NUMBER times steps of $\Delta t= 0.01$ The displacement found was $u_{max numerical} = 2.399$.
+The simulation was executed with a mesh of NUMBER nodes and NUMBER elements, over NUMBER times steps of $\Delta t= 0.01$ The displacement found was $u_{max numerical} = 2.399$. Both the linear-elastic and the Saint-Venant-Kirchoff material models produced the same result.
+
+\subsection{Transient Beam}
+
+The same test case described above is repeated, but this time observing the transient response and measuring the displacement at the tip of the beam over time. The same geometry, mesh, and material properties were used, and the time step adopted was $\Delta t = 0.005$. The results, presented in Fig. XX, were compared to the ones obtained by REFERENCIA TUREK2006. The Saint-Venant-Kirchoff material model was chosen for this test case, due to it being the chosen model in the reference.
+
+\pgfplotstableread[]{ref_solido_trans.txt}\refs
+\pgfplotstableread[]{turek_solido_015_quad_comp_noref_y.txt}\ress
+\begin{figure}
+	\centering
+	\begin{tikzpicture} [scale=1]
+		\begin{axis}[xlabel=$t$,
+			ylabel=$v$,
+			ylabel style={rotate=-90},
+			legend style={font=\footnotesize},
+			yticklabel style={/pgf/number format/fixed},
+			xmin=8,
+			xmax=10,
+			ymin=-0.15,
+			ymax=0.04,
+			legend pos=north west]
+			\addplot[cyan] table[x index = 0, y index=1]{\ress};
+			%			\addplot[orange] table[x index = 0, y index=1]{\rebvx};
+			\addplot[purple, only marks, mark size=1pt] table[x index = 0, y index=1]{\refs};
+			%			\addplot[red, only marks, mark size=1.5pt] table[x index = 0, y index=2]{\lidrefvx};
+			\addlegendentry{Current Work};
+			\addlegendentry{Turek 2006};
+		\end{axis}    
+	\end{tikzpicture}
+	\caption{Comparison of the vertical tip displacement of the fixed beam between the results obtained and the data presented by REFERENCIA turek2006.}
+	\label{fig:beam trans}
+\end{figure}
 
 \subsection{Lid-Driven Cavity Flow}
 
@@ -745,7 +782,7 @@ To validate the forces acting upon the solid walls calculated by the numerical s
 
 \begin{figure} [h]
 	\centering
-	\begin{tikzpicture} [scale = 3]
+	\begin{tikzpicture} [scale = 2.5]
 		\pgfmathsetmacro\f{1}
 		\tikzset{every node/.style={font=\small}}
 		\coordinate (a) at (0,0);
@@ -866,11 +903,59 @@ The drag and lift coefficients obtained in the simulations over several Reynolds
 
 \subsection{Spring Mounted Cylinder}
 
-The final test for the fluid forces acting upon the cylinder is the measure of the amplitude of movement for a spring-mounted cylinder in free flow. This cylinder is fixed in the $x$ direction, and attached to a spring on the $y$ direction, that resists it movement. The spring has an effective stiffness presented in \ref{shiels} given by:
+The final test for the fluid forces acting upon the cylinder is the measure of the amplitude of movement for a spring-mounted cylinder in free flow. This cylinder is fixed in the $x$ direction, and attached to a spring on the $y$ direction, that resists it movement. The spring has an effective stiffness presented in \ref{shiels} given by: \\
 
 \begin{equation}
-    k_{eff} = 
+    k^*_{eff} = k^* - 4\pi^2 {f^*}^2 m^*
+\end{equation} \\
+
+\noindent where $m^*$ is the non-dimensional cylinder mass, defined by \\
+
+\begin{equation}
+	m^* = \frac{m}{0.5 \rho_f d^2 L}
 \end{equation}
+
+\noindent where m is the cylinder mass, and $L$ is the reference length, which is taken as the cylinder diameter. $f^*$ is the frequency of oscillation, measured after the simulation is executed, and $k^*$ is the non-dimensional spring stiffness, given by: \\
+
+\begin{equation}
+	k^* = \frac{k}{0.5* \rho U_{\infty}^2 L }
+\end{equation} \\
+
+\noindent where $\rho$ refers to the reference specific mass, equal to the fluid specific mass, $U_{\infty}$ is the free flow velocity.
+
+For this test, the following parameters were adopted: $U_{\infty} = 1$, $d=1$, $\rho_f=1000$, $\mu=10$, $\rho_s = 10000$. $m$ is calculated as $m= A_{cylinder} l \rho_s / 2$, where $l$ is the solid depth, taken as $l=1$.
+
+\pgfplotstableread[]{shiels.txt}\shiels
+\pgfplotstableread[]{placzek.txt}\placzek
+\pgfplotstableread[]{santos.txt}\santos
+\begin{figure}
+	\centering
+	\begin{tikzpicture} [scale=1.2]
+		\begin{axis}[xlabel=$k*_{eff}$,
+			ylabel=$A*$,
+			ylabel style={rotate=-90},
+			legend style={font=\footnotesize},
+			yticklabel style={/pgf/number format/fixed},
+			xmin=-3,
+			xmax=17,
+			ymin=-0.01,
+			ymax=0.6,
+			%ytick distance=0.1,
+			legend pos=north east]
+			\addplot[orange, only marks] table[x index = 0, y index=1]{\shiels};
+			\addplot[purple, only marks] table[x index = 0, y index=1]{\placzek};
+			%\addplot[red, thin] {1.5*(1 - ((2*\x - 1)*(2*\x - 1)))};
+			\addplot[blue, only marks] table[only marks, x index=0, y index=1] {\santos};
+			%\addplot[purple, only marks, mark size=1pt] table[x index = 0, y index=1]{\refs};
+			%			\addplot[red, only marks, mark size=1.5pt] table[x index = 0, y index=2]{\lidrefvx};
+			\addlegendentry{Shiels 2001};
+			\addlegendentry{Placzek 2009};
+			\addlegendentry{Numerical 48k};
+		\end{axis}    
+	\end{tikzpicture}
+	\caption{Non-dimensional amplitude of vertical displacement for a cylinder inserted in free flow. Comparison of results obtained to both REFERENCIA PLACZEK and SHIELS.}
+	\label{}
+\end{figure}
 
 \section{Results}
 
@@ -878,9 +963,9 @@ The final test for the fluid forces acting upon the cylinder is the measure of t
 	\centering
 	\begin{tikzpicture} [scale = 4]
 		\pgfmathsetmacro\l{4}
-		\pgfmathsetmacro\h{1}
-		\pgfmathsetmacro\w{0.1}
-		\pgfmathsetmacro\s{0.7}
+		\pgfmathsetmacro\h{0.7}
+		\pgfmathsetmacro\w{0.1 * \h}
+		\pgfmathsetmacro\s{0.7 * \h}
 		\tikzset{every node/.style={font=\small}}
 		\coordinate (a) at (0,0);
 		\coordinate (b) at (\l,0);
@@ -895,7 +980,7 @@ The final test for the fluid forces acting upon the cylinder is the measure of t
 		\filldraw[color=cyan!20] (a) -- (b) -- (c) -- (d) -- (a);
 		\filldraw[color=orange!60] (e) -- (f) -- (g) -- (h) -- (d) -- (i) -- (j) -- (c) -- (e);
 		\draw[thin, black] (d) -- (a) -- (b) -- (c) -- (h) -- (g) -- (f) -- (e) -- (d) -- (i) -- (j) -- (c);
-		\draw[<->] (0, -0.2) to ["$6$"] (\l, -0.2);
+		\draw[<->] (0, -0.2 * \h) to ["$6$"] (\l, -0.2* \h);
 		\draw[<->] (\l+0.2, 0) to ["$1$"] (\l+0.2, \h);
 		\draw[<->] (\l+0.2, \h) to ["$0.1$"] (\l+0.2, \h +\w);
 		\draw[<->] (\l/2-\w/2, 0.1*\h) to ["$0.1$"] (\l/2+\w/2, 0.1*\h);
@@ -904,12 +989,12 @@ The final test for the fluid forces acting upon the cylinder is the measure of t
 		\draw[->] (0.1,\h/2) -- +(-0.1,0) node[above right] {Inflow b.c.};
 		\draw[->] (\l-0.1,\h/2) -- +(0.1,0) node[above left] {Outflow b.c.};
 		\draw[->] (\l/2 -\w/2 -0.1,\h/2) -- +(0.1,0) node[above left] {Interface b.c.};
-		\draw[->] (+0.1,\h + 0.05) -- +(-0.1,0);
-		\draw[->] (\l -0.1,\h + 0.05) -- +(0.1,0);
-		\node[right] at (+0.1,\h + 0.05) {Fixed b.c.};
-		\node[left] at (\l-0.1,\h + 0.05) {Fixed b.c.};
-		\node[right] at (0.7, 0.6) {Fluid};
-		\node[right] at (0.7, 1.05) {Solid};
+		\draw[->] (+0.1,\h + 0.05 *\h) -- +(-0.1,0);
+		\draw[->] (\l -0.1 ,\h + 0.05 *\h) -- +(0.1,0);
+		\node[right] at (+0.1 ,\h + 0.05 * \h) {Fixed b.c.};
+		\node[left] at (\l-0.1 ,\h + 0.05 * \h) {Fixed b.c.};
+		\node[right] at (0.175 * \l, 0.6 * \h) {Fluid};
+		\node[right] at (0.175 * \l, 1.05 * \h) {Solid};
 	\end{tikzpicture}
 	\caption{Test Domain}
 	\label{fig:2d static/osc setup}
