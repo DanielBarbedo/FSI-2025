@@ -81,9 +81,11 @@ Fluid–structure interaction (FSI) phenomena are ubiquitous across a wide range
 
 Fluid–structure interaction is inherently a two-way coupled problem. The fluid exerts dynamic loads on the structure through pressure and viscous stresses, inducing deformation or motion. In turn, the structural response modifies the fluid domain boundaries, altering the flow field and consequently the loads acting on the structure. This feedback loop can lead to complex dynamic behavior and introduces additional concerns such as fatigue and elevated stresses, particularly in structures subjected to extreme operating or weather conditions.
 
+The fluid-structure problem can be attacked by two approaches. One way is to solve the fluid and solid phases sequentially, called the partitioned or segregated approach. The coupling between phases can be enforced weakly, with just one iteration per time step, or strongly, with several iterations per time step until a criteria of convergence. This form is simpler to implement and can be executed faster, but can lead to instability in some scenarios. The other approach is the monolithic formulation, where both the fluid and solid phases are solved in the same system of equations. This leads to naturally enforced strong coupling, but requires a more complex implementation, and likely higher execution times, due to a larger system of equations.
 
+Another consideration is the representation of the solid phase and its interaction with the fluid. There are several numerical strategies for this. In Arbitrary Lagrangian–Eulerian (ALE) methods, the solid is described in a Lagrangian frame while the fluid is solved in a moving mesh that fits the interface displacement. The fluid mesh deforms to match the structural motion, ensuring an accurate and sharp representation of the interface. One major downside of this approach is that large deformations can decrease mesh quality, or even require remeshing to continue the simulation.
 
-There are a number of existing strategies to describe the fluid-structure interaction. 
+The immersed boundary method represents the solid phase as a separate Lagrangian mesh embedded in the fluid domain, but it does not share nodes or connectivity with the fluid mesh. The coupling between the solid and fluid is enforced through a distribution of forces calculated at the interface. This approach avoids remeshing and the movement of fluid nodes, but introduces a less precise interface representation, leading to reduced accuracy in the force calculation.
 
 
 This work presents a methodology for the numerical simulation of fluid–structure interaction (FSI), along with its verification. The fluid phase is governed by the Navier–Stokes equations, solved using the finite element method on an unstructured mesh, with a first-order semi-Lagrangian scheme employed for the discretization of the nonlinear convective term. The solid phase is modeled through the discretized balance of momentum equation, adopting either a linear elastic model or a Saint-Venant–Kirchhoff constitutive law. While the solid is described in a Lagrangian formulation, the fluid domain is expressed in an Eulerian framework; to consistently account for mesh motion, an Arbitrary Lagrangian–Eulerian (ALE) approach is employed. The numerical implementation is first verified independently for each phase and subsequently for the coupled problem. Finally, several FSI test cases are presented, encompassing a range of material properties and flow conditions.
@@ -630,8 +632,8 @@ The simulation was executed with a mesh of NUMBER nodes and NUMBER elements, ove
 
 The same test case described above is repeated, but this time observing the transient response and measuring the displacement at the tip of the beam over time. The same geometry, mesh, and material properties were used, and the time step adopted was $\Delta t = 0.005$. The results, presented in Fig. XX, were compared to the ones obtained by REFERENCIA TUREK2006. The Saint-Venant-Kirchoff material model was chosen for this test case, due to it being the chosen model in the reference.
 
-\pgfplotstableread[]{ref_solido_trans.txt}\refs
-\pgfplotstableread[]{turek_solido_015_quad_comp_noref_y.txt}\ress
+\pgfplotstableread[]{Files/ref_solido_trans.txt}\refs
+\pgfplotstableread[]{Files/turek_solido_015_quad_comp_noref_y.txt}\ress
 \begin{figure}
 	\centering
 	\begin{tikzpicture} [scale=1]
@@ -925,9 +927,9 @@ The final test for the fluid forces acting upon the cylinder is the measure of t
 
 For this test, the following parameters were adopted: $U_{\infty} = 1$, $d=1$, $\rho_f=1000$, $\mu=10$, $\rho_s = 10000$. $m$ is calculated as $m= A_{cylinder} l \rho_s / 2$, where $l$ is the solid depth, taken as $l=1$.
 
-\pgfplotstableread[]{shiels.txt}\shiels
-\pgfplotstableread[]{placzek.txt}\placzek
-\pgfplotstableread[]{santos.txt}\santos
+\pgfplotstableread[]{Files/shiels.txt}\shiels
+\pgfplotstableread[]{Files/placzek.txt}\placzek
+\pgfplotstableread[]{Files/santos.txt}\santos
 \begin{figure}
 	\centering
 	\begin{tikzpicture} [scale=1.2]
