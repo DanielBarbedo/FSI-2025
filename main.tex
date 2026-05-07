@@ -844,7 +844,6 @@ The drag and lift coefficients obtained in the simulations over several Reynolds
 \hfill
 \begin{subfigure}{0.45\textwidth}
 \centering
-
 \begin{tikzpicture}
 	\begin{axis}[xlabel=$t$,
 		ylabel=$C_{L}$,
@@ -870,38 +869,6 @@ The drag and lift coefficients obtained in the simulations over several Reynolds
 \caption{}
 \label{fig:drag lift results}
 \end{figure}
-
-% \begin{figure}
-% 	\begin{tikzpicture}
-% 		\begin{axis}[
-% 			xlabel={$Re$},
-% 			ylabel={$C_D$},
-% %			grid=major,
-% 			legend pos=north east,
-% 			enlargelimits=0.1
-% 			]
-			
-% 			% Reference data
-% 			\addplot[only marks, color=red, mark=*] coordinates {
-% 				(10, 2.5)
-% 				(20, 1.8)
-% 				(30, 1.5)
-% 				(40, 1.3)
-% 			};
-% 			\addlegendentry{Reference}
-			
-% 			% Your data
-% 			\addplot[only marks, color=blue, mark=square*] coordinates {
-% 				(10, 2.4)
-% 				(20, 1.7)
-% 				(30, 1.4)
-% 				(40, 1.2)
-% 			};
-% 			\addlegendentry{Your Data}
-			
-% 		\end{axis}
-% 	\end{tikzpicture}	
-% \end{figure}
 
 \subsection{Spring Mounted Cylinder}
 
@@ -956,10 +923,14 @@ For this test, the following parameters were adopted: $U_{\infty} = 1$, $d=1$, $
 		\end{axis}    
 	\end{tikzpicture}
 	\caption{Non-dimensional amplitude of vertical displacement for a cylinder inserted in free flow. Comparison of results obtained to both REFERENCIA PLACZEK and SHIELS.}
-	\label{}
+	\label{fig:amplitude}
 \end{figure}
 
+A good agreement with the results obtained by SHIELS and PLACZEK can be observed in Fig. \ref{fig:amplitude}.
+
 \section{Results}
+
+One aplication of particular interest in this research is the use of a numerical fluid structure simulation tool to describe piping wall vibrations caused by an obstacle, such as a valve, in order to measure the amount of recoverable energy. While a two-dimensional simulation is not adequate to acurately describe three-dimensional piping, the idea can be represented preliminarly by a two-dimensional flow, restricted by a wall, with an obstacle added to cause flow oscillations. Such a domain is represented in Fig. \ref{fig:test domain setup}.
 
 \begin{figure}
 	\centering
@@ -999,8 +970,39 @@ For this test, the following parameters were adopted: $U_{\infty} = 1$, $d=1$, $
 		\node[right] at (0.175 * \l, 1.05 * \h) {Solid};
 	\end{tikzpicture}
 	\caption{Test Domain}
-	\label{fig:2d static/osc setup}
+	\label{fig:test domain setup}
 \end{figure}
+
+Several simulations were executed with the presented domain, measuring the solid wall displacement, measured at the mid-point of the domain. The chosen fluid was crude oil, with the following properties: Viscosity equal to $\mu=0.05\,Pa.s$ and specific mass equal to $\rho = 900\,kg/m^3$. The domain height was set to $h=0.1$, and inflow velocity set to $u=0.833 \, m/s$, and $v = 0$. This results in a Reynolds number equal to $Re=1500$. The solid wall was material was represented by steel and aluminum with elasticity modulus $E=200GPa$ and $E=70Gpa$, specific mass $\rho_s = 7850 kg/m^3$ and $\rho_s = 2700 kg/m^3$, and poisson coefficient $\nu = 0.3$ and $\nu = 0.33$, respectively. The time step was $\Delta t = 0.005$, and the mesh had NUMBER fluid elements and NUMBER solid elements. The solid wall displacements can be observed in Fig. \ref{fig:wall displacement}.
+
+\begin{figure}
+	\centering
+	\begin{tikzpicture}
+		\begin{axis}[xlabel=$t$,
+			ylabel=$v$,
+			ylabel style={rotate=-90},
+			legend style={font=\footnotesize},
+			yticklabel style={/pgf/number format/fixed},
+			xmin=0,
+			xmax=15,
+			%ymin=-0.4,
+			%ymax=0.4,
+			%ytick distance=0.1,
+			legend pos=north east]
+			\addplot table[x index=0, y index=1] {Files/santos.txt};
+						%			\addplot[orange] table[x index = 0, y index=1]{\rebvx};
+			%\addplot[red, thin] {1.5*(1 - ((2*\x - 1)*(2*\x - 1)))};
+			%\addplot[blue, thin] table[x index=0, y expr=\thisrowno{1}/500] {\lift};
+			%\addplot[purple, only marks, mark size=1pt] table[x index = 0, y index=1]{\refs};
+			%			\addplot[red, only marks, mark size=1.5pt] table[x index = 0, y index=2]{\lidrefvx};
+			\addlegendentry{Numerical 48k};
+		\end{axis}
+	\end{tikzpicture}
+	\label{fig:wall displacement}
+	\caption{Wall Displacement}
+\end{figure}
+
+
 
 \section{Conclusion}
 
