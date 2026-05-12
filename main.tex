@@ -934,6 +934,8 @@ One aplication of particular interest in this research is the use of a numerical
 
 \begin{figure}
 	\centering
+
+\begin{subfigure} {0.98\textwidth}
 	\begin{tikzpicture} [scale = 4]
 		\pgfmathsetmacro\l{4}
 		\pgfmathsetmacro\h{0.7}
@@ -945,8 +947,54 @@ One aplication of particular interest in this research is the use of a numerical
 		\coordinate (c) at (\l,\h);
 		\coordinate (d) at (0,\h);
 		\coordinate (e) at (\l/2-\w/2,\h);
-		\coordinate (f) at (\l/2-\w/2,\h-\s);
-		\coordinate (g) at (\l/2+\w/2,\h-\s);
+%		\coordinate (f) at (\l/2-\w/2,\h-\s);
+%		\coordinate (g) at (\l/2+\w/2,\h-\s);
+		\coordinate (h) at (\l/2+\w/2,\h);
+		\coordinate (i) at (0,\h+\w);
+		\coordinate (j) at (\l,\h+\w);		
+		\filldraw[color=cyan!20] (a) -- (b) -- (c) -- (d) -- (a);
+		\filldraw[color=orange!60] (e) -- (h) -- (d) -- (i) -- (j) -- (c) -- (e);
+		\draw[thin, black] (d) -- (a) -- (b) -- (c) -- (h) -- (e) -- (d) -- (i) -- (j) -- (c);
+		\draw[<->] (0, -0.2 * \h) to ["$6$"] (\l, -0.2* \h);
+		\draw[<->] (\l+0.2, 0) to ["$1$"] (\l+0.2, \h);
+		\draw[<->] (\l+0.2, \h) to ["$0.1$"] (\l+0.2, \h +\w);
+%		\draw[<->] (\l/2-\w/2, 0.1*\h) to ["$0.1$"] (\l/2+\w/2, 0.1*\h);
+%		\draw[<->] (\l/2+\w/2+0.1, \h) to ["$0.7$"] ( \l/2+\w/2+0.1, \h-\s);
+		\draw[fill=white] (0.35 * \l , 0.33 * \h) circle (0.1);
+		\node[right] at (0.35 * \l + 0.2, 0.33 * \h){No slip b.c.};
+		\draw[->] (0.35 * \l + 0.2, 0.33 * \h) -- +(-0.1,0);
+		\draw[->] (\l/2,0.1) -- +(0,-0.1) node[above right] {Slip b.c.};
+		\draw[->] (0.1,\h/2) -- +(-0.1,0) node[above right] {Inflow b.c.};
+		\draw[->] (\l-0.1,\h/2) -- +(0.1,0) node[above left] {Outflow b.c.};
+		\draw[->] (\l*3/4 , \h - \w-0.05) -- +(0,0.1) node[below left] {Interface b.c.};
+		\draw[->] (+0.1,\h + 0.05 *\h) -- +(-0.1,0);
+		\draw[->] (\l -0.1 ,\h + 0.05 *\h) -- +(0.1,0);
+		\draw[<->] (\l/4, \h) to ["$0.65$"] ( \l/4, \h-\s);
+		\draw[<->] (\l/4, \h-\s) to ["$0.35$"] ( \l/4, 0);
+		\draw[<->] (0, 0) to ["$2.1$"] ( \l*0.35, 0);
+		\node[right] at (+0.1 ,\h + 0.05 * \h) {Fixed b.c.};
+		\node[left] at (\l-0.1 ,\h + 0.05 * \h) {Fixed b.c.};
+		\node[right] at (0.15 * \l, 0.6 * \h) {Fluid};
+		\node[right] at (0.15 * \l, 1.05 * \h) {Solid};
+	\end{tikzpicture}
+\end{subfigure}
+\vspace{0.5cm}
+\begin{subfigure} {0.98\textwidth}
+	\begin{tikzpicture} [scale = 4]
+		\pgfmathsetmacro\l{4}
+		\pgfmathsetmacro\h{0.7}
+		\pgfmathsetmacro\w{0.1 * \h}
+		\pgfmathsetmacro\s{0.7 * \h}
+		\tikzset{every node/.style={font=\small}}
+		\coordinate (a) at (0,0);
+		\coordinate (b) at (\l,0);
+		\coordinate (c) at (\l,\h);
+		\coordinate (d) at (0,\h);
+		\coordinate (e) at (\l/2-\w/2,\h);
+		\coordinate (f) at (\l/2-\w/2 -0.2,\h-\s + 0.2);
+		\coordinate (f2) at (\l/2-\w/2 -0.2,\h-\s);
+		\coordinate (g) at (\l/2+\w/2 -0.2,\h-\s+ 0.2);
+		\coordinate (g2) at (\l/2+\w/2 -0.2,\h-\s);
 		\coordinate (h) at (\l/2+\w/2,\h);
 		\coordinate (i) at (0,\h+\w);
 		\coordinate (j) at (\l,\h+\w);		
@@ -958,10 +1006,14 @@ One aplication of particular interest in this research is the use of a numerical
 		\draw[<->] (\l+0.2, \h) to ["$0.1$"] (\l+0.2, \h +\w);
 		\draw[<->] (\l/2-\w/2, 0.1*\h) to ["$0.1$"] (\l/2+\w/2, 0.1*\h);
 		\draw[<->] (\l/2+\w/2+0.1, \h) to ["$0.7$"] ( \l/2+\w/2+0.1, \h-\s);
-		\draw[->] (\l/3,0.1) -- +(0,-0.1) node[above right] {Slip b.c.};
+		\draw[->] (\l/1.5,0.1) -- +(0,-0.1) node[above right] {Slip b.c.};
 		\draw[->] (0.1,\h/2) -- +(-0.1,0) node[above right] {Inflow b.c.};
 		\draw[->] (\l-0.1,\h/2) -- +(0.1,0) node[above left] {Outflow b.c.};
-		\draw[->] (\l/2 -\w/2 -0.1,\h/2) -- +(0.1,0) node[above left] {Interface b.c.};
+		\draw[->] (\l*4/5 , \h - \w-0.05) -- +(0,0.1) node[below left] {Interface b.c.};
+		\draw[fill=white] (0.35 * \l , 0.33 * \h) circle (0.1);
+		\draw[<->] (\l/4, \h) to ["$0.65$"] ( \l/4, \h-\s);
+		\draw[<->] (\l/4, \h-\s) to ["$0.35$"] ( \l/4, 0);
+		\draw[<->] (0, 0) to ["$2.1$"] ( \l*0.35, 0);
 		\draw[->] (+0.1,\h + 0.05 *\h) -- +(-0.1,0);
 		\draw[->] (\l -0.1 ,\h + 0.05 *\h) -- +(0.1,0);
 		\node[right] at (+0.1 ,\h + 0.05 * \h) {Fixed b.c.};
@@ -969,14 +1021,19 @@ One aplication of particular interest in this research is the use of a numerical
 		\node[right] at (0.175 * \l, 0.6 * \h) {Fluid};
 		\node[right] at (0.175 * \l, 1.05 * \h) {Solid};
 	\end{tikzpicture}
+\end{subfigure}
+
+
 	\caption{Test Domain}
-	\label{fig:test domain setup}
+	\label{fig:test domain setup b}
 \end{figure}
 
 Several simulations were executed with the presented domain, measuring the solid wall displacement, measured at the mid-point of the domain. The chosen fluid was crude oil, with the following properties: Viscosity equal to $\mu=0.05\,Pa.s$ and specific mass equal to $\rho = 900\,kg/m^3$. The domain height was set to $h=0.1$, and inflow velocity set to $u=0.833 \, m/s$, and $v = 0$. This results in a Reynolds number equal to $Re=1500$. The solid wall was material was represented by steel and aluminum with elasticity modulus $E=200GPa$ and $E=70Gpa$, specific mass $\rho_s = 7850 kg/m^3$ and $\rho_s = 2700 kg/m^3$, and poisson coefficient $\nu = 0.3$ and $\nu = 0.33$, respectively. The time step was $\Delta t = 0.005$, and the mesh had NUMBER fluid elements and NUMBER solid elements. The solid wall displacements can be observed in Fig. \ref{fig:wall displacement}.
 
 \begin{figure}
 	\centering
+	\begin{subfigure}{0.45\textwidth}
+		\centering
 	\begin{tikzpicture}
 		\begin{axis}[xlabel=$t$,
 			ylabel=$v$,
@@ -984,24 +1041,47 @@ Several simulations were executed with the presented domain, measuring the solid
 			legend style={font=\footnotesize},
 			yticklabel style={/pgf/number format/fixed},
 			xmin=0,
-			xmax=15,
+			xmax=7.5,
 			%ymin=-0.4,
 			%ymax=0.4,
 			%ytick distance=0.1,
-			legend pos=north east]
-			\addplot table[x index=0, y index=1] {Files/santos.txt};
-						%			\addplot[orange] table[x index = 0, y index=1]{\rebvx};
-			%\addplot[red, thin] {1.5*(1 - ((2*\x - 1)*(2*\x - 1)))};
-			%\addplot[blue, thin] table[x index=0, y expr=\thisrowno{1}/500] {\lift};
-			%\addplot[purple, only marks, mark size=1pt] table[x index = 0, y index=1]{\refs};
-			%			\addplot[red, only marks, mark size=1.5pt] table[x index = 0, y index=2]{\lidrefvx};
-			\addlegendentry{Numerical 48k};
+			legend pos=south east]
+			\addplot[no marks] table[x index=0, y index=1] {Files/paredeobs4_linear_4_vmed_0.416_10-Mar_v_p3.txt};
+			\addplot[no marks] table[x index=0, y index=1] {Files/paredeobs4_linear_4_vmed_0.833_10-Mar_v_p3.txt};			
+			\addlegendentry{Re = 750};
+			\addlegendentry{Re = 1500};
 		\end{axis}
 	\end{tikzpicture}
-	\label{fig:wall displacement}
-	\caption{Wall Displacement}
+	\label{fig:wall displacement domain 4}
+	\caption{Wall Displacement at $x=4.5$. The simulation was executed with 86.6k nodes and 43.9k elements}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.45\textwidth}
+		\centering
+		\begin{tikzpicture}
+			\begin{axis}[xlabel=$t$,
+				ylabel=$v$,
+				ylabel style={rotate=-90},
+				legend style={font=\footnotesize},
+				yticklabel style={/pgf/number format/fixed},
+				xmin=0,
+				xmax=7.5,
+				%ymin=-0.4,
+				%ymax=0.4,
+				%ytick distance=0.1,
+				legend pos=south east]
+				\addplot[no marks] table[x index=0, y index=1] {Files/paredeobs7_linear_7_vmed_0.416_10-Mar_v_p3.txt};
+				\addplot[no marks] table[x index=0, y index=1] {Files/paredeobs7_linear_7_vmed_0.833_10-Mar_v_p3.txt};			
+				\addlegendentry{Re = 750};
+				\addlegendentry{Re = 1500};
+			\end{axis}
+		\end{tikzpicture}
+		\label{fig:wall displacement domain 4}
+		\caption{Wall Displacement at $x=4.5$. The simulation was executed with 62.5k nodes and 31.8k elements}
+	\end{subfigure}
+	\caption{}
+	\label{fig:drag lift results}
 \end{figure}
-
 
 
 \section{Conclusion}
