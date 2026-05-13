@@ -381,7 +381,7 @@ A single mesh is used to represent the whole domain, where the different phases 
 	\centering
 	\begin{subfigure}{0.48\textwidth}
 		\centering
-		\begin{tikzpicture}[scale=0.8]
+		\begin{tikzpicture}[scale=0.75]
 			\coordinate (a) at (1,3);
 			\coordinate (b) at (3.2,3);
 			\coordinate (c) at (5.5,3);
@@ -441,7 +441,7 @@ A single mesh is used to represent the whole domain, where the different phases 
 %	\hfill
 	\begin{subfigure}{0.48\textwidth}
 		\centering
-		\begin{tikzpicture}[scale=0.8]
+		\begin{tikzpicture}[scale=0.75]
 			\coordinate (a) at (1.1,3.5);
 			\coordinate (b) at (2.9,3.5);
 			\coordinate (c) at (4.9,3.5);
@@ -601,7 +601,7 @@ In order to verify the solid part of the code, a test case with no fluid was exe
 
 \begin{figure} [h]
 	\centering
-	\begin{tikzpicture} [scale = 1]
+	\begin{tikzpicture} [scale = 0.85]
 		\pgfmathsetmacro\l{16}
 		\pgfmathsetmacro\h{1}
 		\tikzset{every node/.style={font=\small}}
@@ -636,7 +636,7 @@ The same test case described above is repeated, but this time observing the tran
 \pgfplotstableread[]{Files/turek_solido_015_quad_comp_noref_y.txt}\ress
 \begin{figure}
 	\centering
-	\begin{tikzpicture} [scale=1]
+	\begin{tikzpicture} [scale=0.9]
 		\begin{axis}[xlabel=$t$,
 			ylabel=$v$,
 			ylabel style={rotate=-90},
@@ -674,10 +674,12 @@ The Lid-Driven Cavity flow is a classical benchmark in the computer fluid mechan
 
 \begin{figure}
 \centering
-\begin{subfigure}{0.47\textwidth}
+\begin{subfigure}{0.48\textwidth}
 	\centering
-	\begin{tikzpicture} [scale=0.87]
-			\begin{axis}[xlabel=$y$,
+	\begin{tikzpicture}
+			\begin{axis}[
+					width=\linewidth,
+					xlabel=$y$,
 					ylabel=$v_{x}$,
 					ylabel style={rotate=-90},
 					xmin=0,
@@ -698,11 +700,13 @@ The Lid-Driven Cavity flow is a classical benchmark in the computer fluid mechan
 	\caption{Re 10, 100, 200 e 400}
 	\label{fig:lid_vx}
 \end{subfigure}
-\qquad
-\begin{subfigure}{0.47\textwidth}
+\hfill
+\begin{subfigure}{0.48\textwidth}
 	\centering
-	\begin{tikzpicture} [scale=0.87]
-			\begin{axis}[xlabel=$x$,
+	\begin{tikzpicture}
+			\begin{axis}[
+					width=\linewidth,
+					xlabel=$x$,
 					ylabel=$v_{y}$,
 					ylabel style={rotate=-90},
 					xmin=0,
@@ -784,7 +788,7 @@ To validate the forces acting upon the solid walls calculated by the numerical s
 
 \begin{figure} [h]
 	\centering
-	\begin{tikzpicture} [scale = 2.5]
+	\begin{tikzpicture} [scale = 2.1]
 		\pgfmathsetmacro\f{1}
 		\tikzset{every node/.style={font=\small}}
 		\coordinate (a) at (0,0);
@@ -817,10 +821,12 @@ The drag and lift coefficients obtained in the simulations over several Reynolds
 \pgfplotstableread[]{Files/placzek_12k_a_28-Jan_lift_out.txt}\lift
 \begin{figure}
 \centering
-\begin{subfigure}{0.45\textwidth}
+\begin{subfigure}{0.48\textwidth}
 \centering
 \begin{tikzpicture}
-		\begin{axis}[xlabel=$t$,
+		\begin{axis}[
+			width=\linewidth,
+			xlabel=$t$,
 			ylabel=$C_{D}$,
 			ylabel style={rotate=-90},
 			legend style={font=\footnotesize},
@@ -842,10 +848,12 @@ The drag and lift coefficients obtained in the simulations over several Reynolds
 \caption{Drag coefficient}
 \end{subfigure}
 \hfill
-\begin{subfigure}{0.45\textwidth}
+\begin{subfigure}{0.48\textwidth}
 \centering
 \begin{tikzpicture}
-	\begin{axis}[xlabel=$t$,
+	\begin{axis}[
+		width=\linewidth,
+		xlabel=$t$,
 		ylabel=$C_{L}$,
 		ylabel style={rotate=-90},
 		legend style={font=\footnotesize},
@@ -899,8 +907,9 @@ For this test, the following parameters were adopted: $U_{\infty} = 1$, $d=1$, $
 \pgfplotstableread[]{Files/santos.txt}\santos
 \begin{figure}
 	\centering
-	\begin{tikzpicture} [scale=1.2]
-		\begin{axis}[xlabel=$k*_{eff}$,
+	\begin{tikzpicture} [scale=1]
+		\begin{axis}[
+			xlabel=$k*_{eff}$,
 			ylabel=$A*$,
 			ylabel style={rotate=-90},
 			legend style={font=\footnotesize},
@@ -934,13 +943,13 @@ One aplication of particular interest in this research is the use of a numerical
 
 \begin{figure}
 	\centering
-
-\begin{subfigure} {0.98\textwidth}
+\begin{subfigure}{0.98\textwidth}
+	\resizebox{\linewidth}{!}{
 	\begin{tikzpicture} [scale = 4]
 		\pgfmathsetmacro\l{4}
 		\pgfmathsetmacro\h{0.7}
 		\pgfmathsetmacro\w{0.1 * \h}
-		\pgfmathsetmacro\s{0.7 * \h}
+		\pgfmathsetmacro\s{0.5 * \h}
 		\tikzset{every node/.style={font=\small}}
 		\coordinate (a) at (0,0);
 		\coordinate (b) at (\l,0);
@@ -960,59 +969,68 @@ One aplication of particular interest in this research is the use of a numerical
 		\draw[<->] (\l+0.2, \h) to ["$0.1$"] (\l+0.2, \h +\w);
 %		\draw[<->] (\l/2-\w/2, 0.1*\h) to ["$0.1$"] (\l/2+\w/2, 0.1*\h);
 %		\draw[<->] (\l/2+\w/2+0.1, \h) to ["$0.7$"] ( \l/2+\w/2+0.1, \h-\s);
-		\draw[fill=white] (0.35 * \l , 0.33 * \h) circle (0.1);
-		\node[right] at (0.35 * \l + 0.2, 0.33 * \h){No slip b.c.};
-		\draw[->] (0.35 * \l + 0.2, 0.33 * \h) -- +(-0.1,0);
+		\draw[fill=white] (0.35 * \l , 0.4 * \h) circle (0.12);
+		%\node[right] at (0.35 * \l + 0.2, 0.33 * \h){No slip b.c.};
+		\draw[->] (0.35 * \l + 0.22, 0.4 * \h) -- +(-0.1,0) node[right, xshift=7.5pt] {No Slip b.c.};		
 		\draw[->] (\l/2,0.1) -- +(0,-0.1) node[above right] {Slip b.c.};
 		\draw[->] (0.1,\h/2) -- +(-0.1,0) node[above right] {Inflow b.c.};
 		\draw[->] (\l-0.1,\h/2) -- +(0.1,0) node[above left] {Outflow b.c.};
 		\draw[->] (\l*3/4 , \h - \w-0.05) -- +(0,0.1) node[below left] {Interface b.c.};
 		\draw[->] (+0.1,\h + 0.05 *\h) -- +(-0.1,0);
 		\draw[->] (\l -0.1 ,\h + 0.05 *\h) -- +(0.1,0);
-		\draw[<->] (\l/4, \h) to ["$0.65$"] ( \l/4, \h-\s);
-		\draw[<->] (\l/4, \h-\s) to ["$0.35$"] ( \l/4, 0);
+		\draw[<->] (\l * 0.75, \h) to ["$0.04$"] (\l * 0.75, \h + \w);
+		\draw[<->] (\l/4, \h) to ["$0.3$"] ( \l/4, \h-\s*1.2);
+		\draw[<->] (\l/4, \h-\s*1.2) to ["$0.2$"] ( \l/4, 0);
 		\draw[<->] (0, 0) to ["$2.1$"] ( \l*0.35, 0);
 		\node[right] at (+0.1 ,\h + 0.05 * \h) {Fixed b.c.};
 		\node[left] at (\l-0.1 ,\h + 0.05 * \h) {Fixed b.c.};
 		\node[right] at (0.15 * \l, 0.6 * \h) {Fluid};
 		\node[right] at (0.15 * \l, 1.05 * \h) {Solid};
 	\end{tikzpicture}
+}
 \end{subfigure}
 \vspace{0.5cm}
 \begin{subfigure} {0.98\textwidth}
+	\resizebox{\linewidth}{!}{
 	\begin{tikzpicture} [scale = 4]
 		\pgfmathsetmacro\l{4}
 		\pgfmathsetmacro\h{0.7}
 		\pgfmathsetmacro\w{0.1 * \h}
-		\pgfmathsetmacro\s{0.7 * \h}
+		\pgfmathsetmacro\s{0.5 * \h}
+		\pgfmathsetmacro\off{0.3}
 		\tikzset{every node/.style={font=\small}}
 		\coordinate (a) at (0,0);
 		\coordinate (b) at (\l,0);
 		\coordinate (c) at (\l,\h);
 		\coordinate (d) at (0,\h);
-		\coordinate (e) at (\l/2-\w/2,\h);
-		\coordinate (f) at (\l/2-\w/2 -0.2,\h-\s + 0.2);
-		\coordinate (f2) at (\l/2-\w/2 -0.2,\h-\s);
-		\coordinate (g) at (\l/2+\w/2 -0.2,\h-\s+ 0.2);
-		\coordinate (g2) at (\l/2+\w/2 -0.2,\h-\s);
-		\coordinate (h) at (\l/2+\w/2,\h);
+		\coordinate (e) at (\l/2-\w/4,\h);
+		\coordinate (f) at (\l/2-\w/4 -\off*0.25, \h-\s*0.45);
+		\coordinate (f2) at (\l/2-\w/4 -\off*0.95, \h-\s*0.9);		
+		\coordinate (g) at (\l/2+\w/4 -\off*0.25, \h-\s*0.5);
+		\coordinate (g2) at (\l/2+\w/4 -\off*0.95, \h-\s);
+		\coordinate (h) at (\l/2+\w/4,\h);
 		\coordinate (i) at (0,\h+\w);
 		\coordinate (j) at (\l,\h+\w);		
 		\filldraw[color=cyan!20] (a) -- (b) -- (c) -- (d) -- (a);
-		\filldraw[color=orange!60] (e) -- (f) -- (g) -- (h) -- (d) -- (i) -- (j) -- (c) -- (e);
-		\draw[thin, black] (d) -- (a) -- (b) -- (c) -- (h) -- (g) -- (f) -- (e) -- (d) -- (i) -- (j) -- (c);
+		\filldraw[color=orange!60] (e) .. controls (f) .. (f2) -- (g2) .. controls (g) .. (h) -- (d) -- (i) -- (j) -- (c) -- (e);
+		\draw[thin, black] (e) .. controls (f) .. (f2) -- (g2) .. controls (g) .. (h);
+		\draw[thin, black] (h) -- (c) -- (b) -- (a) -- (d) -- (e);
+		\draw[thin, black] (d) -- (i) -- (j) -- (c);
 		\draw[<->] (0, -0.2 * \h) to ["$6$"] (\l, -0.2* \h);
 		\draw[<->] (\l+0.2, 0) to ["$1$"] (\l+0.2, \h);
 		\draw[<->] (\l+0.2, \h) to ["$0.1$"] (\l+0.2, \h +\w);
-		\draw[<->] (\l/2-\w/2, 0.1*\h) to ["$0.1$"] (\l/2+\w/2, 0.1*\h);
-		\draw[<->] (\l/2+\w/2+0.1, \h) to ["$0.7$"] ( \l/2+\w/2+0.1, \h-\s);
+		\draw[<->] (\l/2-\w/2, 0.1*\h) to ["$0.02$"] (\l/2+\w/2, 0.1*\h); %width of the obstacle
+		\draw[<->] (\l/2+\w/2+0.1, \h) to ["$0.25$"] ( \l/2+\w/2+0.1, \h-\s);
 		\draw[->] (\l/1.5,0.1) -- +(0,-0.1) node[above right] {Slip b.c.};
 		\draw[->] (0.1,\h/2) -- +(-0.1,0) node[above right] {Inflow b.c.};
 		\draw[->] (\l-0.1,\h/2) -- +(0.1,0) node[above left] {Outflow b.c.};
 		\draw[->] (\l*4/5 , \h - \w-0.05) -- +(0,0.1) node[below left] {Interface b.c.};
-		\draw[fill=white] (0.35 * \l , 0.33 * \h) circle (0.1);
-		\draw[<->] (\l/4, \h) to ["$0.65$"] ( \l/4, \h-\s);
-		\draw[<->] (\l/4, \h-\s) to ["$0.35$"] ( \l/4, 0);
+		\draw[fill=white] (0.35 * \l , 0.4 * \h) circle (0.12);
+		\draw[<->] (\l * 0.75, \h) to ["$0.04$"] (\l * 0.75, \h + \w);
+		\draw[<->] (0.35 * \l, 0.4 * \h - 0.12) to ["$0.16$"] (0.35 * \l, 0.4 * \h + 0.12); %raio do circulo
+		\draw[->] (0.35 * \l + 0.22, 0.4 * \h) -- +(-0.1,0) node[right, xshift=7.5pt] {No Slip b.c.};
+		\draw[<->] (\l/4, \h) to ["$0.3$"] ( \l/4, \h-\s*1.2);
+		\draw[<->] (\l/4, \h-\s*1.2) to ["$0.2$"] ( \l/4, 0);
 		\draw[<->] (0, 0) to ["$2.1$"] ( \l*0.35, 0);
 		\draw[->] (+0.1,\h + 0.05 *\h) -- +(-0.1,0);
 		\draw[->] (\l -0.1 ,\h + 0.05 *\h) -- +(0.1,0);
@@ -1021,9 +1039,8 @@ One aplication of particular interest in this research is the use of a numerical
 		\node[right] at (0.175 * \l, 0.6 * \h) {Fluid};
 		\node[right] at (0.175 * \l, 1.05 * \h) {Solid};
 	\end{tikzpicture}
+}
 \end{subfigure}
-
-
 	\caption{Test Domain}
 	\label{fig:test domain setup b}
 \end{figure}
@@ -1032,22 +1049,21 @@ Several simulations were executed with the presented domain, measuring the solid
 
 \begin{figure}
 	\centering
-	\begin{subfigure}{0.45\textwidth}
+	\begin{subfigure}{0.48\textwidth}
 		\centering
 	\begin{tikzpicture}
-		\begin{axis}[xlabel=$t$,
+		\begin{axis}[
+			width=\linewidth,
+			xlabel=$t$,
 			ylabel=$v$,
 			ylabel style={rotate=-90},
 			legend style={font=\footnotesize},
 			yticklabel style={/pgf/number format/fixed},
 			xmin=0,
 			xmax=7.5,
-			%ymin=-0.4,
-			%ymax=0.4,
-			%ytick distance=0.1,
 			legend pos=south east]
-			\addplot[no marks] table[x index=0, y index=1] {Files/paredeobs4_linear_4_vmed_0.416_10-Mar_v_p3.txt};
-			\addplot[no marks] table[x index=0, y index=1] {Files/paredeobs4_linear_4_vmed_0.833_10-Mar_v_p3.txt};			
+			\addplot[no marks, blue] table[x index=0, y index=1] {Files/paredeobs4_linear_4_vmed_0.416_10-Mar_v_p3.txt};
+			\addplot[no marks, red] table[x index=0, y index=1] {Files/paredeobs4_linear_4_vmed_0.833_10-Mar_v_p3.txt};			
 			\addlegendentry{Re = 750};
 			\addlegendentry{Re = 1500};
 		\end{axis}
@@ -1056,33 +1072,31 @@ Several simulations were executed with the presented domain, measuring the solid
 	\caption{Wall Displacement at $x=4.5$. The simulation was executed with 86.6k nodes and 43.9k elements}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.45\textwidth}
+	\begin{subfigure}{0.48\textwidth}
 		\centering
 		\begin{tikzpicture}
-			\begin{axis}[xlabel=$t$,
+			\begin{axis}[
+				width=\linewidth,
+				xlabel=$t$,
 				ylabel=$v$,
 				ylabel style={rotate=-90},
 				legend style={font=\footnotesize},
 				yticklabel style={/pgf/number format/fixed},
 				xmin=0,
 				xmax=7.5,
-				%ymin=-0.4,
-				%ymax=0.4,
-				%ytick distance=0.1,
 				legend pos=south east]
-				\addplot[no marks] table[x index=0, y index=1] {Files/paredeobs7_linear_7_vmed_0.416_10-Mar_v_p3.txt};
-				\addplot[no marks] table[x index=0, y index=1] {Files/paredeobs7_linear_7_vmed_0.833_10-Mar_v_p3.txt};			
+				\addplot[no marks, blue] table[x index=0, y index=1] {Files/paredeobs7_linear_7_vmed_0.416_10-Mar_v_p3.txt};
+				\addplot[no marks, red] table[x index=0, y index=1] {Files/paredeobs7_linear_7_vmed_0.833_10-Mar_v_p3.txt};			
 				\addlegendentry{Re = 750};
 				\addlegendentry{Re = 1500};
 			\end{axis}
 		\end{tikzpicture}
-		\label{fig:wall displacement domain 4}
+		\label{fig:wall displacement domain 7}
 		\caption{Wall Displacement at $x=4.5$. The simulation was executed with 62.5k nodes and 31.8k elements}
 	\end{subfigure}
 	\caption{}
 	\label{fig:drag lift results}
 \end{figure}
-
 
 \section{Conclusion}
 
