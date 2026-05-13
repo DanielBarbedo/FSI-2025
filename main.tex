@@ -1057,15 +1057,31 @@ Several simulations were executed with the presented domains, measuring the soli
 			xlabel=$t$,
 			ylabel=$v$,
 			ylabel style={rotate=-90},
-			legend style={font=\footnotesize},
+			legend columns=2,
+			legend style={
+				at={(0.1,0.5)},
+				anchor=west,				
+				font=\tiny,
+				%					draw=none,
+				row sep=0.5pt,
+				inner sep=1pt,
+				nodes={scale=0.8, transform shape}
+			},
 			yticklabel style={/pgf/number format/fixed},
 			xmin=0,
-			xmax=7.5,
-			legend pos=south east]
+			xmax=5,
+%			xmax=7.5,
+%			legend pos=south east
+			]
 			\addplot[no marks, blue] table[x index=0, y index=1] {Files/paredeobs4_linear_4_vmed_0.416_10-Mar_v_p3_al.txt};
 			\addplot[no marks, red] table[x index=0, y index=1] {Files/paredeobs4_linear_4_vmed_0.833_10-Mar_v_p3_al.txt};			
+			\addplot[no marks, green] table[x index=0, y index=1]
+			{Files/paredeobs4_linear_4_vmed_0.416_10-Mar_v_p3_aco.txt};
+			\addplot[no marks, cyan] table[x index=0, y index=1] {Files/paredeobs4_linear_4_vmed_0.833_10-Mar_v_p3_aco.txt};
 			\addlegendentry{Aluminium Re = 750};
 			\addlegendentry{Aluminium Re = 1500};
+			\addlegendentry{Steel Re = 750};
+			\addlegendentry{Steel Re = 1500};
 		\end{axis}
 	\end{tikzpicture}
 	\label{fig:wall displacement domain 4}
@@ -1080,15 +1096,27 @@ Several simulations were executed with the presented domains, measuring the soli
 				xlabel=$t$,
 				ylabel=$v$,
 				ylabel style={rotate=-90},
-				legend style={font=\footnotesize},
+				legend columns=2,
+				legend style={
+					font=\tiny,
+%					draw=none,
+					row sep=0.5pt,
+					inner sep=1pt,
+					nodes={scale=0.8, transform shape}
+					},
 				yticklabel style={/pgf/number format/fixed},
 				xmin=0,
-				xmax=7.5,
-				legend pos=south east]
+				xmax=5,
+%				xmax=7.5,
+				legend pos=north west]
 				\addplot[no marks, blue] table[x index=0, y index=1] {Files/paredeobs7_linear_7_vmed_0.416_10-Mar_v_p3_al.txt};
-				\addplot[no marks, red] table[x index=0, y index=1] {Files/paredeobs7_linear_7_vmed_0.833_10-Mar_v_p3_al.txt};			
+				\addplot[no marks, red] table[x index=0, y index=1] {Files/paredeobs7_linear_7_vmed_0.833_10-Mar_v_p3_al.txt};
+				\addplot[no marks, green] table[x index=0, y index=1] {Files/paredeobs7_linear_7_vmed_0.416_10-Mar_v_p3_aco.txt};
+				\addplot[no marks, cyan] table[x index=0, y index=1] {Files/paredeobs7_linear_7_vmed_0.833_10-Mar_v_p3_aco.txt};
 				\addlegendentry{Aluminium Re = 750};
 				\addlegendentry{Aluminium Re = 1500};
+				\addlegendentry{Steel Re = 750};
+				\addlegendentry{Steel Re = 1500};
 			\end{axis}
 		\end{tikzpicture}
 		\label{fig:wall displacement domain 7}
