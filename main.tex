@@ -16,7 +16,6 @@
 \usepackage{hyperref}
 \usepackage{tikz}
 \usepackage{booktabs}
-\usepackage{pgfplots}
 \usepackage{indentfirst}
 \usepackage{subcaption}
 \usepackage{algorithm} 
@@ -24,6 +23,13 @@
 \usepackage{pgfplots}
 \usepackage{pgfplotstable}
 \usetikzlibrary[quotes, calc, arrows.meta, plotmarks]
+\usepackage[normalem]{ulem}
+\usepackage{cancel}
+\usepackage[backend=bibtex]{biblatex}
+\addbibresource{sample.bib}
+
+\newcommand{\remove}[1]{\textcolor{red}{\sout{#1}}}
+\newcommand{\addtext}[1]{\textcolor{blue}{#1}}
 % \usetikzlibrary{external}
 % \tikzexternalize[prefix=tikz/]
 %\usepgfplotslibrary{external}
@@ -45,10 +51,12 @@
 
 \pgfplotsset{compat = newest}
 
-\title{A Flow-Structure Interaction Method...}
+\title{A Finite Element Methodology for Fluid--Structure Interaction Simulations}
 
 \author{Daniel B. V. Santos$^*$$^a$ \\
 email:\href{daniel.barbedo@coppe.ufrj.br}{daniel.barbedo@coppe.ufrj.br}
+\and
+Tania M. A. Angulo$^a$ \\ email:\href{}{}
 \and
 Gustavo R. Anjos$^a$ \\ email:\href{gustavo.rabello@coppe.ufrj.br}{gustavo.rabello@coppe.ufrj.br}
 \and
@@ -68,27 +76,35 @@ Marcelo A. Savi$^a$ \\ email:\href{savi@mecanica.coppe.ufrj.br}{savi@mecanica.co
 \maketitle
 
 \begin{abstract}
-
+	
+This work presents a finite element methodology for the numerical simulation of fluid--structure interaction (FSI) problems. The fluid phase is represented by the incompressible Navier--Stokes equations solved on unstructured meshes, while the solid phase is modeled through the momentum balance equation using either a linear elastic or a Saint-Venant--Kirchhoff constitutive law. The coupling between the fluid and solid phases is handled through a partitioned Arbitrary Lagrangian--Eulerian (ALE) formulation, with both phases sharing the same computational mesh at the interface. The nonlinear convective term of the fluid equations is discretized using a semi-Lagrangian scheme. The implementation is validated through a series of benchmark problems, including static and transient beam deformation, lid-driven cavity flow, drag and lift coefficient measurements over a fixed cylinder, and the oscillation amplitude of a spring-mounted cylinder. Finally, representative FSI applications involving flow-induced wall vibrations are presented for different Reynolds numbers and structural materials.
+	
 \end{abstract}
+
 
 \keywords{Fluid-Structure Interaction, Finite Element Method, Van der Pol Oscilator, CFD}
 
 \section{Introduction}
 
-In the interest of accurately representing the fluid induced vibrations on piping, and therefore the available energy to be converted into electric energy to be stored and remotely power smart materials, a flow-structure simulation using the finite element method to represent both the flow and the solid structure was developed.
+%In the interest of accurately representing the fluid induced vibrations on piping, and therefore the available energy to be converted into electric energy to be stored and remotely power smart materials, a flow-structure simulation using the finite element method to represent both the flow and the solid structure was developed.
 
-Fluid–structure interaction (FSI) phenomena are ubiquitous across a wide range of engineering applications, from airflow induced by fans in condensers and evaporators, to internal flows in piping systems, to wind acting on turbines, and water interacting with ship hulls and propellers. Many of these interactions warrant detailed analysis due to their direct impact on system performance. For instance, aerodynamic forces on wind turbines strongly influence power generation, just as hydrodynamic forces are central to the efficiency of wave-energy converters. To accurately capture these effects, a numerical FSI framework has been developed and implemented.
+Fluid–structure interaction (FSI) phenomena are ubiquitous across a wide range of engineering applications, from airflow induced by fans in condensers and evaporators, to internal flows in piping systems, to air acting on wind turbines, and water interacting with ship hulls and propellers. Many of these interactions warrant detailed analysis due to their direct impact on system performance. For instance, aerodynamic forces on wind turbines strongly influence power generation, just as hydrodynamic forces are central to the efficiency of wave-energy converters. In the interest of being able to accurately describe these effects, a numerical FSI framework has been developed and implemented.
 
 Fluid–structure interaction is inherently a two-way coupled problem. The fluid exerts dynamic loads on the structure through pressure and viscous stresses, inducing deformation or motion. In turn, the structural response modifies the fluid domain boundaries, altering the flow field and consequently the loads acting on the structure. This feedback loop can lead to complex dynamic behavior and introduces additional concerns such as fatigue and elevated stresses, particularly in structures subjected to extreme operating or weather conditions.
 
-The fluid-structure problem can be attacked by two approaches. One way is to solve the fluid and solid phases sequentially, called the partitioned or segregated approach. The coupling between phases can be enforced weakly, with just one iteration per time step, or strongly, with several iterations per time step until a criteria of convergence. This form is simpler to implement and can be executed faster, but can lead to instability in some scenarios. The other approach is the monolithic formulation, where both the fluid and solid phases are solved in the same system of equations. This leads to naturally enforced strong coupling, but requires a more complex implementation, and likely higher execution times, due to a larger system of equations.
+The fluid--structure interaction problem can generally be approached in two different ways. One way is to solve the fluid and solid phases sequentially, called the partitioned or segregated approach. In this approach, the fluid and solid phases are solved sequentially, one after the other. The solid loads are derived from the fluid pressure and velocity field solution, while the fluid boundary conditions are then updated by the interface movement caused by solid displacement. The coupling between phases can be enforced weakly, with just one iteration per time step, or strongly, with several iterations per time step until a convergence criterion. This approach is simpler to implement and can be executed faster, but can lead to instability in some scenarios. The other approach is the monolithic formulation, where both the fluid and solid phases are solved in the same system of equations. This leads to naturally enforced strong coupling, but requires a more complex implementation, and likely higher execution times, due to a larger system of equations.
 
-Another consideration is the representation of the solid phase and its interaction with the fluid. There are several numerical strategies for this. In Arbitrary Lagrangian–Eulerian (ALE) methods, the solid is described in a Lagrangian frame while the fluid is solved in a moving mesh that fits the interface displacement. The fluid mesh deforms to match the structural motion, ensuring an accurate and sharp representation of the interface. One major downside of this approach is that large deformations can decrease mesh quality, or even require remeshing to continue the simulation.
+Another consideration is how the solid and fluid phases are described in discrete form. The fluid is usually represented in an Eulerian formulation, with fixed discrete mesh nodes, while the solid phase is represented in a Lagrangian framework, where the mesh nodes move to accompany the solid displacement. There are several numerical strategies for dealing with this issue. For example, in Arbitrary Lagrangian–Eulerian (ALE) methods, the solid is described in a Lagrangian frame while the fluid is solved in a moving mesh that fits the interface displacement. The fluid mesh deforms to match the structural motion, ensuring an accurate and sharp representation of the interface. One major downside of this approach is that large deformations can decrease mesh quality, or even require remeshing to continue the simulation.
 
-The immersed boundary method represents the solid phase as a separate Lagrangian mesh embedded in the fluid domain, but it does not share nodes or connectivity with the fluid mesh. The coupling between the solid and fluid is enforced through a distribution of forces calculated at the interface. This approach avoids remeshing and the movement of fluid nodes, but introduces a less precise interface representation, leading to reduced accuracy in the force calculation.
+Several works in the literature employ the ALE framework for fluid--structure interaction simulations. \citeauthor{turek2006} \cite{turek2006} presented one of the most widely adopted FSI benchmarks, involving the interaction between incompressible flow and an elastic structure attached to a cylinder. The work became a standard reference for validating partitioned and monolithic FSI solvers. \citeauthor{heil2004} \cite{heil2004} developed a strongly coupled ALE finite element formulation for large-deformation fluid--structure interaction problems, demonstrating the robustness of the approach for moving boundary simulations. \citeauthor{fernandez2007} \cite{fernandez2007} investigated stability issues in partitioned ALE methods and proposed improved coupling techniques for incompressible flows interacting with thin-walled structures. More recently, \citeauthor{bazilevs2013} \cite{bazilevs2013} employed an ALE variational multiscale framework for cardiovascular fluid--structure interaction simulations, demonstrating the applicability of ALE methods to complex engineering and biomedical problems.
 
+Another solution is the immersed boundary method, which represents the solid phase as a separate Lagrangian mesh embedded in the fixed fluid domain, which does not share nodes or connectivity with the fluid mesh. The coupling between the solid and fluid is enforced through a distribution of forces calculated at the interface. This approach avoids remeshing and the movement of fluid nodes, but introduces a less precise interface representation, leading to reduced accuracy in the force calculation.
 
-This work presents a methodology for the numerical simulation of fluid–structure interaction (FSI), along with its verification. The fluid phase is governed by the Navier–Stokes equations, solved using the finite element method on an unstructured mesh, with a first-order semi-Lagrangian scheme employed for the discretization of the nonlinear convective term. The solid phase is modeled through the discretized balance of momentum equation, adopting either a linear elastic model or a Saint-Venant–Kirchhoff constitutive law. While the solid is described in a Lagrangian formulation, the fluid domain is expressed in an Eulerian framework; to consistently account for mesh motion, an Arbitrary Lagrangian–Eulerian (ALE) approach is employed. The numerical implementation is first verified independently for each phase and subsequently for the coupled problem. Finally, several FSI test cases are presented, encompassing a range of material properties and flow conditions.
+The immersed boundary methodology has also been extensively applied to fluid--structure interaction problems. The original immersed boundary method proposed by \citeauthor{peskin1972} \cite{peskin1972} was developed for simulating blood flow through heart valves and remains one of the most influential approaches in the field. \citeauthor{mittal2005} \cite{mittal2005} presented a comprehensive review of immersed boundary techniques for incompressible flows involving complex moving boundaries. \citeauthor{uhlmann2005} \cite{uhlmann2005} developed a direct forcing immersed boundary method for particulate flows, demonstrating accurate coupling between fluid and moving solids. \citeauthor{griffith2009} \cite{griffith2009} proposed an adaptive and distributed-memory immersed boundary framework capable of efficiently handling large-scale FSI simulations involving flexible structures.
+
+This work presents a methodology for the numerical simulation of fluid–structure interaction (FSI), along with its verification. The fluid phase is governed by the Navier–Stokes equations, solved using the finite element method on an unstructured mesh, with a first-order semi-Lagrangian scheme employed for the discretization of the nonlinear convective term. The solid phase is modeled through the discretized balance of momentum equation, adopting either a linear elastic model or a Saint-Venant–Kirchhoff constitutive law.
+
+While the solid is described in a Lagrangian formulation, the fluid domain is expressed in an Eulerian framework, and both share the same mesh. To consistently account for mesh motion, an Arbitrary Lagrangian–Eulerian (ALE) approach is employed. The numerical strategy implemented is the partitioned approach, with a single iteration per time step. This implementation is first verified independently for each phase and subsequently for the coupled problem. Finally, a couple of FSI test cases are presented, with two different solid materials, steel and aluminum, and two distinct flow conditions, representing Reynolds number $Re=750$ and $Re=1500$.
 
 %Using this numerical tool, several Reynolds numbers were simulated, and the displacements and forces in the solid structure produced by the flow measured. In turn, an oscillator function similar to a van der pol oscillator was used to fit the displacement and force data as a function of the Reynolds number, producing an accurate representation of the flow-structure interaction induced vibrations for a given Reynolds range that is accurate, readily available, and does not require lengthy numerical simulations.
 
@@ -108,7 +124,7 @@ The fluid is represented by the incompressible Navier-Stokes equations, ignoring
 	\label{eq:Momentum}
 \end{equation} \\
 
-\noindent where $\mathbf{v}$ represents the velocity, $p$ the pressure and $\rho$ and $\mu$ are the specific mass and viscosity of the fluid, respectively. In order to accomodate the solid displacement, a moving mesh or remeshing strategy is necessary. For this work, we chose to follow the ALE methodology. In order to implement this method, the advection velocity in the material derivative needs to be replaced by the $\mathbf{c}$ velocity, more details can be found in \cite{anjos_moving_2021}. This velocity is given by:
+\noindent where $\mathbf{v}$ represents the velocity, $p$ the pressure and $\rho$ and $\mu$ are the specific mass and viscosity of the fluid, respectively. In order to accommodate the solid displacement, a moving mesh or remeshing strategy is necessary. For this work, we chose to follow the ALE methodology. In order to implement this method, the advection velocity in the material derivative needs to be replaced by the $\mathbf{c}$ velocity, more details can be found in \cite{anjos_moving_2021}. This velocity is given by:
 
 \begin{equation}
 	\mathbf{c} = \mathbf{v}_{fluid} - \mathbf{v}_{mesh}
@@ -122,7 +138,7 @@ The solid is represented by the dynamic momentum balance equation, with no dampi
 	\label{eq:Solid Momentum}
 \end{equation} \\
 
-\noindent where $\sigma$ is the Cauchy stress tensor, $\mathbf{u}$ are the displacements, $\rho_s$ is the specific mass of the solid, and $f$ represents the external forces per unit of area, the traction, acting upon the solid. The Cauchy stress tensor is a function of the strain tensor and the material properties, as follows: 
+\noindent where $\sigma$ is the Cauchy stress tensor, $\mathbf{u}$ are the displacements, $\rho_s$ is the specific mass of the solid, and $f$ represents the external forces per unit area, the traction, acting upon the solid. The Cauchy stress tensor is a function of the strain tensor and the material properties, as follows: 
 
 \begin{equation}
 	\sigma = \mathbf{D} \epsilon
@@ -260,7 +276,7 @@ Replacing the results above in Eq.\ref{eq:Solid Momentum}, and rearranging the t
 %
 %\noindent where $\rho_f$, $L_f$, and $V_f$ represent the fluid specific mass, characteristic velocity, and length, respectively. The non-dimensionalization procedure results on Eq. \ref{eq:matrix form solid} again, but with non-dimensional parameters.
 
-The loads applied to the solid, at the fluid-solid interface, are derived from the newtonion fluid stress tensor, given by:
+The loads applied to the solid, at the fluid-solid interface, are derived from the Newtonian fluid stress tensor, given by:
 
 \begin{equation}
     \mathbf {\tau} = -pI + \mu [ \nabla \mathbf{u} + (\nabla \mathbf{u})^T ]
@@ -276,7 +292,7 @@ The loads applied to the solid, at the fluid-solid interface, are derived from t
 
 \section{Numerical Modeling}
 
-Both the Navier-Stokes equations and the dynamic momentum balance of the solid are solved through the finite element method, using the Galerkin discretization. The convective term of the Navier-Stokes equations is non-linear term. This term can generate instability at higher Reynolds numbers when used directly after the Galerkin discretization. In order to avoid this instability, this term is discretized explicitly through a first order semi-Lagrangian method \cite{anjos_one_2022}, which is unconditionally stable.
+Both the Navier-Stokes equations and the dynamic momentum balance of the solid are solved through the finite element method, using the Galerkin discretization. The convective term of the Navier-Stokes equations is a non-linear term, which can generate instability at higher Reynolds numbers when used directly after the Galerkin discretization. In order to avoid this instability, it is discretized explicitly through a first order semi-Lagrangian method \cite{anjos_one_2022}, which is unconditionally stable.
 
 \begin{figure}
 	\centering
@@ -315,21 +331,21 @@ Both the Navier-Stokes equations and the dynamic momentum balance of the solid a
 	\label{fig:tri}
 \end{figure}
 
-Both the fluid and the solid are discretized using a six-node triangular finite element presented in Fig.~\ref{fig:tri}, with the corresponding interpolation functions also shown in the figure. In order to respect the LBB condition, the fluid has its velocity assigned to all six nodes, and the pressure calculated only on the three nodes located on the vertices of the triangle (Element P2P1 \cite{arnold1984}).
+Both the fluid and the solid are discretized using a six-node triangular finite element presented in Fig.~\ref{fig:tri}, with the corresponding interpolation functions also shown in the figure. In order to respect the LBB condition, the fluid has its velocity assigned to all six nodes, and the pressure is calculated only on the three nodes located on the vertices of the triangle (Element P2P1 \cite{arnold1984}).
 
-The boundary conditions for the fluid are Dirichlet b.c. for velocity at the walls and at the inflow. Also Dirichlet b.c. for pressure at the outflow, and Neumann for the velocity. At the interface, Robin b.c. were used, setting the velocity equal to the solid velocity.
+The boundary conditions for the fluid are Dirichlet b.c. for velocity at the walls and at the inflow. Dirichlet b.c. for pressure are also applied at the outflow, and Neumann b.c. for the velocity. At the interface, Robin b.c. were used, setting the fluid velocity values equal to the solid velocity.
 
-The boundary conditions for the solid are also Dirichlet b.c. for displacement at the fixed positions. At the interface, the traction is applied.
+The boundary conditions for the solid are also Dirichlet b.c. for displacement at the fixed positions. At the interface, the traction, which is calculated using the fluid velocity and pressure values, is applied.
 
 \subsection{Semi-Lagrangian}
 
-A Lagrangian representation follows the material particles (and the associated quantities of interest) over time, as opposed to the Eulerian representation that is concerned with the quantities at a fixed position. The semi-Lagrangian method uses a Lagrangian representation of fluid particles, but the set of particles change at each time step. In the finite element method, the domain is discrete, and the quantities are evaluated at the nodes. Therefore, in the semi-Lagrangian method, the focus is on identifying the set of particles that arrive at the mesh nodes at each time step, using the following equation: \\
+A Lagrangian representation follows the material particles (and the associated quantities of interest) over time, as opposed to the Eulerian representation that is concerned with the quantities at fixed positions. The semi-Lagrangian method uses a Lagrangian representation of fluid particles, but the set of particles followed change at each time step. In the finite element method, the domain is discrete, and the quantities are evaluated at the nodes. Therefore, in the semi-Lagrangian method, it is necessary to identify the set of particles that arrive at the mesh nodes at each time step. This is achieved by using the following equation: \\
 
 \begin{equation}
 	x_d = x_n + \mathbf{v} \Delta t
 \end{equation} \\
 
-\noindent where $x_d$ is the departure point of the fluid particle that is going to arrive at the position $x_n$ occupied by a mesh node, after a $\Delta t$ amount of time. The quantities, the velocity components in the case of the advective term of the momentum equation, presented at the position $x_d$ are then assigned to the position $x_n$.
+\noindent where $x_d$ is the departure point of the fluid particle that is going to arrive at the position $x_n$ occupied by a mesh node, after a $\Delta t$ amount of time. The quantities presented at the position $x_d$ are then assigned to the position $x_n$. The quantities advected by the Navier-Stokes equations are the velocity components.
 
 \subsection{Temporal Discretization}
 
@@ -339,7 +355,7 @@ Both solid and fluid phases require a transient description. In the fluid, the t
 	\frac{\partial \mathbf{u}}{ \partial t} = \frac{M\mathbf{u}^{n+1} - M\mathbf{u}^{n}}{\Delta t}
 \end{equation} \\
 
-\noindent where $M$ is the mass matrix derived from the Galerkin discretization. The method utilized to describe the transient response for the solid phase is the Newmark method REFERENCIA. In the Newmark method, at each time step both the acceleration and velocity are calculated through: \\
+\noindent where $M$ is the mass matrix derived from the Galerkin discretization. The method utilized to describe the transient response for the solid phase is the Newmark method \cite{newmark1959}. In the Newmark method, at each time step both the acceleration and velocity are calculated through: \\
 
 \begin{equation}
 	\mathbf{a} = \frac{\mathbf{u}^n - \mathbf{u}^{n-1} - \mathbf{v}^{n-1} \Delta t - ( 0.5 - \beta)   \mathbf{a}^{n-1}\Delta t^2}{\beta \Delta t^2}
@@ -353,7 +369,7 @@ Both solid and fluid phases require a transient description. In the fluid, the t
 
 \noindent where $\beta$ and $\gamma$ are input parameters. $\frac{M}{\Delta t^2}$ is added to the left-hand side of the linear system of equations, and $M\mathbf{a}$ is added to the right-hand side (the loading), where $M$ is the mass matrix derived from the solid assembly.
 
-For the Saint-Venant-Kirchoff material, the values selected were $\beta = 0.5$ and $\gamma = 0.5$, due to their unconditional stability. When a linear-elastic material is chosen, the values $\beta = 0.25$ and $\gamma = 0.5$ are picked, which simplify the method to a second order implicit finite difference in time.
+When working with a Saint-Venant-Kirchoff material, the values selected were $\beta = 0.25$ and $\gamma = 0.5$, due to their unconditional stability. For a linear-elastic material, the values $\beta = 0$ and $\gamma = 0.5$ were chosen, which simplify the method to a second order implicit finite difference in time.
 
 %given by \\
 
@@ -369,9 +385,11 @@ For the Saint-Venant-Kirchoff material, the values selected were $\beta = 0.5$ a
 
 \subsection{Implementation Details}
 
-In order for the fluid and the solid to interact, they need to share boundaries. To represent that, two strategies can be implemented: The creation of two separate finite element meshes representing each material, or a single finite element mesh in which zones are assigned to either material.
+The interaction between the fluid and solid phases happens at their shared boundaries. How these boundaries are discretized, depend upon how the fluid and solid domains have been represented. Two separate finite element meshes representing each material can be created, and these can overlap or not, depending on the methodology adopted, or a single finite element mesh in which different zones are assigned to either phase. Both options can be observed in Fig. \ref{fig:mesh method}
 
-The first option allows for an easier matrix assembly of each material and subsequent linear system solving, but incurs on the difficulties associated with connecting the solid and fluid degrees of freedom, specially on unstructured meshes, which are typically more flexible and adequate to a more diverse set of problems
+%To represent that, two strategies can be implemented: The creation of two separate finite element meshes representing each material, or a single finite element mesh in which zones are assigned to either material.
+
+The first option allows for an easier matrix assembly of each material and subsequent linear system solving, but incurs on the difficulties associated with connection between the solid and fluid degrees of freedom, specially on unstructured meshes, which are typically more flexible and adequate to a more diverse set of problems, and on overlapping mesh methods.
 
 In the second option, the fluid and solid share nodes, so the connection is a lot easier, but it leads to a more complex "bookkeeping" of node numbering, matrix assembly, and the construction of the linear system of equations. This is the approach used in this work.
 
@@ -379,7 +397,7 @@ A single mesh is used to represent the whole domain, where the different phases 
 
 \begin{figure}
 	\centering
-	\begin{subfigure}{0.48\textwidth}
+	\begin{subfigure}[t]{0.47\textwidth}
 		\centering
 		\begin{tikzpicture}[scale=0.75]
 			\coordinate (a) at (1,3);
@@ -436,10 +454,10 @@ A single mesh is used to represent the whole domain, where the different phases 
 			\fill[orange] (c) circle (2pt);
 			\fill[orange] (d) circle (2pt);
 		\end{tikzpicture}
-		\caption{First figure}
+		\caption{Continuous mesh representation, where the fluid and solid phases share interface nodes directly.}
 	\end{subfigure}
-%	\hfill
-	\begin{subfigure}{0.48\textwidth}
+	\hfill
+	\begin{subfigure}[t]{0.47\textwidth}
 		\centering
 		\begin{tikzpicture}[scale=0.75]
 			\coordinate (a) at (1.1,3.5);
@@ -522,10 +540,10 @@ A single mesh is used to represent the whole domain, where the different phases 
 			\fill[orange] (w) circle (2pt);
 			\fill[orange] (x) circle (2pt);
 		\end{tikzpicture}
-		\caption{Second figure}
+		\caption{Decoupled mesh representation, where fluid and solid meshes are connected through interpolation procedures.}
 	\end{subfigure}
-	\caption{In a) the Lid-Driven Cavity setup is presented, and in b) the velocity profile obtained for the Re=100 case, compared to the points presented in REFERENCE}
-	\label{fig:lid setup}
+	\caption{Comparison between continuous and decoupled mesh strategies for representing the fluid--structure interface. In a), the fluid and solid phases share degrees of freedom directly, while in b) the connection is performed through interpolation between neighboring nodes.}
+	\label{fig:mesh method}
 \end{figure}
 
 When considering the numerical implementation, a renumbering of nodes was found convenient. Several matrix multiplications, and a few linear systems of equations, need to be accomplished, and the necessary matrices are smaller, and more easily assembled if the nodes are grouped. Therefore, a renumbering of nodes in the order of interface, solid phase, liquid phase vertices and liquid phase edges was done. That is, from zero to number of interface nodes, all nodes belong to the interface, and so on. The interface nodes, of course, belong both to the solid phase and fluid phase.
@@ -575,7 +593,7 @@ The final form of the linear system of equations for the fluid and solid phases 
 \end{array}
 \] \\
 
-The linear system of equations are solved sequentially in a staggered fashion. The fluid velocity and pressure fields are solved, and the obtained values are used to calculate the external traction acting upon the solid at the fluid-solid interface. In turn, the solid displacement is solved, and the solid velocity calculated through the following equation:
+The linear systems of equations are solved sequentially in a staggered fashion. The fluid velocity and pressure fields are discovered, and the obtained values are used to calculate the external traction acting upon the solid at the fluid-solid interface. In turn, the solid displacement is solved, and the solid velocity calculated through the following equation:
 
 \begin{equation}
 	\mathbf{v}_s^n = \frac{\mathbf{u}^n - \mathbf{u}^{n-1}}{\Delta t}
@@ -626,11 +644,11 @@ In order to verify the solid part of the code, a test case with no fluid was exe
 	\label{fig:solid beam}
 \end{figure}
 
-The simulation was executed with a mesh of NUMBER nodes and NUMBER elements, over NUMBER times steps of $\Delta t= 0.01$ The displacement found was $u_{max numerical} = 2.399$. Both the linear-elastic and the Saint-Venant-Kirchoff material models produced the same result.
+The simulation was executed with a mesh of 9941 nodes and 4970 elements. The displacement found was $u_{max numerical} = 2.399$. Both the linear-elastic and the Saint-Venant-Kirchoff material models produced the same result.
 
 \subsection{Transient Beam}
 
-The same test case described above is repeated, but this time observing the transient response and measuring the displacement at the tip of the beam over time. The same geometry, mesh, and material properties were used, and the time step adopted was $\Delta t = 0.005$. The results, presented in Fig. XX, were compared to the ones obtained by REFERENCIA TUREK2006. The Saint-Venant-Kirchoff material model was chosen for this test case, due to it being the chosen model in the reference.
+The same test case described above is repeated, but this time observing the transient response and measuring the displacement at the tip of the beam over time. The same geometry, mesh, and material properties were used, and the time step adopted was $\Delta t = 0.005$. The results, presented in Fig.~\ref{fig:beam trans}, were compared to the ones obtained by \citeauthor{turek2006} \cite{turek2006}. The Saint-Venant--Kirchoff material model was chosen for this test case, due to it being the chosen model in the reference.
 
 \pgfplotstableread[]{Files/ref_solido_trans.txt}\refs
 \pgfplotstableread[]{Files/turek_solido_015_quad_comp_noref_y.txt}\ress
@@ -655,13 +673,13 @@ The same test case described above is repeated, but this time observing the tran
 			\addlegendentry{Turek 2006};
 		\end{axis}    
 	\end{tikzpicture}
-	\caption{Comparison of the vertical tip displacement of the fixed beam between the results obtained and the data presented by REFERENCIA turek2006.}
+	\caption{Comparison of the vertical tip displacement of the fixed beam between the present results and the reference data of \citeauthor{turek2006}.}
 	\label{fig:beam trans}
 \end{figure}
 
 \subsection{Lid-Driven Cavity Flow}
 
-The Lid-Driven Cavity flow is a classical benchmark in the computer fluid mechanics. As seen in Fig \ref{fig:lid domain}, it consists of a cavity with no slip boundary conditions on its side and bottom walls, and an imposed horizontal velocity at the top. A point at the boundary is set to zero pressure, and the resulting velocity fields can be compared to a reference.
+The Lid-Driven Cavity flow is a classical benchmark in the computer fluid mechanics. It consists of a bi-dimensional square domain, with no slip boundary conditions on its side and bottom walls, and an imposed horizontal velocity at the top. A point at the boundary is set to zero pressure.
 
 \pgfplotstableread[]{Files/lid_re10_vx_swapped.txt}\reavx
 \pgfplotstableread[]{Files/lid_re10_vy_swapped.txt}\reavy
@@ -697,7 +715,7 @@ The Lid-Driven Cavity flow is a classical benchmark in the computer fluid mechan
 					\addlegendentry{Marchi 2009};
 				\end{axis}    
 		\end{tikzpicture}
-	\caption{Re 10, 100, 200 e 400}
+	\caption{Horizontal velocity profile along the vertical centerline for $Re=10$ and $Re=100$.}
 	\label{fig:lid_vx}
 \end{subfigure}
 \hfill
@@ -724,10 +742,10 @@ The Lid-Driven Cavity flow is a classical benchmark in the computer fluid mechan
 					\addlegendentry{Marchi 2009};
 				\end{axis}    
 		\end{tikzpicture}
-	\caption{Re 10, 100}
+	\caption{Vertical velocity profile along the horizontal centerline for $Re=10$ and $Re=100$.}
 	\label{fig:lid_vy}
 	\end{subfigure}
-	\caption{Re 10, 100}
+	\caption{Velocity profiles for the lid-driven cavity benchmark compared against the reference results of \citeauthor{marchi2009}.}
 	\label{fig:lid}
 \end{figure}
 
@@ -780,11 +798,11 @@ The Lid-Driven Cavity flow is a classical benchmark in the computer fluid mechan
 %\label{fig:lid setup}
 %\end{figure}
 
-The simulations were executed with NUMBER elements, with a time step equal to NUMBER, over Reynolds numbers $Re=10$, $Re=100$, $Re=1000$. The results obtained are displayed in Fig \ref{tab:lid setup}.
+The simulations were executed with approximately 48 thousand elements, with a time step equal to $\Delta t = 0.005$, over Reynolds numbers $Re=10$, $Re=100$, $Re=1000$. The results obtained are displayed in Fig.~\ref{fig:lid}, and are in very good agreement with the reference data presented by \citeauthor{marchi2009} \cite{marchi2009}.
 
 \subsection{Drag and Lift Coefficients}
 
-To validate the forces acting upon the solid walls calculated by the numerical simulation, the drag and lift coefficients obtained over the simulation of a fixed cylinder inside a fluid domain over several Reynolds numbers were measured and compared to available references in the literature, such as the works of  REF REF REF. The simulation domain used is presented in Fig \ref{fig:drag domain}
+To validate the forces acting upon the solid walls calculated by the numerical simulation, the drag and lift coefficients obtained over the simulation of a fixed cylinder inside a fluid domain with Reynolds number $Re=100$ were measured and compared to available references in the literature, such as the works of \citeauthor{turek2006} \cite{turek2006} and \citeauthor{placzek2009} \cite{placzek2009}. The simulation domain used is presented in Fig \ref{fig:drag domain}.
 
 \begin{figure} [h]
 	\centering
@@ -815,7 +833,7 @@ To validate the forces acting upon the solid walls calculated by the numerical s
 	\label{fig:drag domain}
 \end{figure}
 
-The drag and lift coefficients obtained in the simulations over several Reynolds numbers can be compared to the references in Fig. \ref{fig:drag coeff}. Good agreement with the different references can be observed.
+The drag and lift coefficients obtained in the simulations over several Reynolds numbers are shown in Fig. \ref{fig:drag coeff}. Good agreement with the different references can be observed, with drag values averaging $C_D=1.37$ and maximum lift value of $C_L=0.34$ being in range of what is reported in the literature.
 
 \pgfplotstableread[]{Files/placzek_12k_a_28-Jan_drag_out.txt}\drag
 \pgfplotstableread[]{Files/placzek_12k_a_28-Jan_lift_out.txt}\lift
@@ -880,7 +898,7 @@ The drag and lift coefficients obtained in the simulations over several Reynolds
 
 \subsection{Spring Mounted Cylinder}
 
-The final test for the fluid forces acting upon the cylinder is the measure of the amplitude of movement for a spring-mounted cylinder in free flow. This cylinder is fixed in the $x$ direction, and attached to a spring on the $y$ direction, that resists it movement. The spring has an effective stiffness presented in \ref{shiels} given by: \\
+The final test for the fluid forces acting upon the cylinder is the measure of the amplitude of movement for a spring-mounted cylinder in free flow. This cylinder is fixed in the $x$ direction, and attached to a spring on the $y$ direction, that resists it movement. The spring has an effective stiffness presented in \citeauthor{shiels2001} \cite{shiels2001}, given by: \\
 
 \begin{equation}
     k^*_{eff} = k^* - 4\pi^2 {f^*}^2 m^*
@@ -931,15 +949,15 @@ For this test, the following parameters were adopted: $U_{\infty} = 1$, $d=1$, $
 			\addlegendentry{Numerical 48k};
 		\end{axis}    
 	\end{tikzpicture}
-	\caption{Non-dimensional amplitude of vertical displacement for a cylinder inserted in free flow. Comparison of results obtained to both REFERENCIA PLACZEK and SHIELS.}
+	\caption{Non-dimensional amplitude of vertical displacement for a cylinder inserted in cross-flow. Comparison of the obtained results with the reference data of \citeauthor{placzek2009} and \citeauthor{shiels2001}.}
 	\label{fig:amplitude}
 \end{figure}
 
-A good agreement with the results obtained by SHIELS and PLACZEK can be observed in Fig. \ref{fig:amplitude}.
+A good agreement with the results obtained by \citeauthor{shiels2001} \cite{shiels2001} and \citeauthor{placzek2009} \cite{placzek2009} can be observed in Fig.~\ref{fig:amplitude}, confirming that the aerodynamic forces acting upon the solid phase are accurately represented.
 
 \section{Results}
 
-One aplication of particular interest in this research is the use of a numerical fluid structure simulation tool to describe piping wall vibrations caused by an obstacle, such as a valve, in order to measure the amount of recoverable energy. While a two-dimensional simulation is not adequate to acurately describe three-dimensional piping, the idea can be represented preliminarly by a two-dimensional flow, restricted by a wall, with an obstacle added to cause flow oscillations. Such a domain is represented in Fig. \ref{fig:test domain setup}. Two cases were chosen, in the first one, domain A, the obstacle was a cylinder placed in the flow path. In the second case, domain B, a thin, rigid filament, made of the same material as the wall was placed right after the cylinder. The idea is that the filament catches flow oscillations generated by the cylinder, interacts with those, while disturbing the flow itself. These flow disturbances will contribute to the wall displacement.
+While the formulation is fully general, one application of particular interest in this research is the use of a numerical fluid structure simulation tool to describe piping wall vibrations caused by an obstacle, such as a valve, in order to measure the amount of recoverable energy. While a two-dimensional simulation is not adequate to accurately describe three-dimensional piping, the idea can be represented preliminary by a two-dimensional flow, restricted by a wall, with an obstacle added to cause flow oscillations. Such a domain is represented in Fig. \ref{fig:test domain setup}. Two cases were chosen, in the first one, domain A, the obstacle was a cylinder placed in the flow path. In the second case, domain B, a thin, rigid filament, made of the same material as the wall was placed right after the cylinder. The idea is that the filament catches flow oscillations generated by the cylinder, interacts with those, while disturbing the flow itself. These flow disturbances will contribute to the wall displacement.
 
 \begin{figure}
 	\centering
@@ -1045,7 +1063,7 @@ One aplication of particular interest in this research is the use of a numerical
 	\label{fig:test domain setup b}
 \end{figure}
 
-Several simulations were executed with the presented domains, measuring the solid wall displacement at three quarters of the domain length in $x$. The chosen fluid was crude oil, with the following properties: Viscosity equal to $\mu=0.05\,Pa.s$ and specific mass equal to $\rho = 900\,kg/m^3$. The domain height was set to $h=0.05$, and inflow velocity set to $u=0.416$, $u=0.833 \, m/s$, and $v = 0$ in both cases. This results in Reynolds numbers equal to $Re=750$ and $Re=1500$. The solid wall was material was represented by steel and aluminium with elasticity modulus $E=200GPa$ and $E=70Gpa$, specific mass $\rho_s = 7850 kg/m^3$ and $\rho_s = 2700 kg/m^3$, and poisson coefficients $\nu = 0.3$ and $\nu = 0.33$, respectively. The time step was $\Delta t = 0.005$, and the meshes regarding domains A and B had $43.9k$ and $31.8$ fluid elements, and $43.9k$ and $31.8$ solid elements, respectively. The solid wall displacements can be observed in Fig. \ref{fig:wall displacement}.
+Several simulations were executed with the presented domains, measuring the solid wall displacement at three quarters of the domain length in $x$. The chosen fluid was crude oil, with the following properties: Viscosity equal to $\mu=0.05\,Pa.s$ and specific mass equal to $\rho = 900\,kg/m^3$. The domain height was set to $h=0.05$, and inflow velocity set to $u=0.416$, $u=0.833 \, m/s$, and $v = 0$ in both cases. This results in Reynolds numbers equal to $Re=750$ and $Re=1500$. The solid wall was material was represented by steel and aluminum with elasticity modulus $E=200 \, GPa$ and $E=70 \, Gpa$, specific mass $\rho_s = 7850 \, kg/m^3$ and $\rho_s = 2700 \, kg/m^3$, and Poisson coefficients $\nu = 0.3$ and $\nu = 0.33$, respectively. The time step was $\Delta t = 0.005$, and the meshes regarding domains A and B had $43.9$ and $31.8$ thousand fluid elements, and $43.9$ and $31.8$ thousand solid elements, respectively. The solid wall displacements can be observed in Fig. \ref{fig:wall displacement}.
 
 \begin{figure}
 	\centering
@@ -1078,8 +1096,8 @@ Several simulations were executed with the presented domains, measuring the soli
 			\addplot[no marks, green] table[x index=0, y index=1]
 			{Files/paredeobs4_linear_4_vmed_0.416_10-Mar_v_p3_aco.txt};
 			\addplot[no marks, cyan] table[x index=0, y index=1] {Files/paredeobs4_linear_4_vmed_0.833_10-Mar_v_p3_aco.txt};
-			\addlegendentry{Aluminium Re = 750};
-			\addlegendentry{Aluminium Re = 1500};
+			\addlegendentry{Aluminum Re = 750};
+			\addlegendentry{Aluminum Re = 1500};
 			\addlegendentry{Steel Re = 750};
 			\addlegendentry{Steel Re = 1500};
 		\end{axis}
@@ -1113,8 +1131,8 @@ Several simulations were executed with the presented domains, measuring the soli
 				\addplot[no marks, red] table[x index=0, y index=1] {Files/paredeobs7_linear_7_vmed_0.833_10-Mar_v_p3_al.txt};
 				\addplot[no marks, green] table[x index=0, y index=1] {Files/paredeobs7_linear_7_vmed_0.416_10-Mar_v_p3_aco.txt};
 				\addplot[no marks, cyan] table[x index=0, y index=1] {Files/paredeobs7_linear_7_vmed_0.833_10-Mar_v_p3_aco.txt};
-				\addlegendentry{Aluminium Re = 750};
-				\addlegendentry{Aluminium Re = 1500};
+				\addlegendentry{Aluminum Re = 750};
+				\addlegendentry{Aluminum Re = 1500};
 				\addlegendentry{Steel Re = 750};
 				\addlegendentry{Steel Re = 1500};
 			\end{axis}
@@ -1122,15 +1140,15 @@ Several simulations were executed with the presented domains, measuring the soli
 		\label{fig:wall displacement domain 7}
 		\caption{Wall Displacement at $x=4.5$. The simulation was executed with 62.5k total nodes and 31.8k total elements}
 	\end{subfigure}
-	\caption{}
-	\label{fig:drag lift results}
+	\caption{Wall displacement histories for domains A and B considering different Reynolds numbers and structural materials.}
+	\label{fig:wall diplacement}
 \end{figure}
 
-The displacements in case A are regular, and they reflect the pressure variations caused by the vortex shedding around the fixed cylinder. The displacements in case B are much more chaotic, and the interplay between the vortex shedding and the filament movement can be observed to cause a much more complex wall displacement, as is expected.
+The displacements in case A are regular, and they reflect the pressure variations caused by the vortex shedding around the fixed cylinder. The displacements in case B are considerably more irregular, and the interplay between the vortex shedding and the filament movement can be observed to cause a much more complex wall displacement, as is expected.
 
 \section{Conclusion}
 
-In this paper, a methodology for constructing a finite element based numerical tool for simulating fluid-structure interaction has been detailed, the methodology has been verified in each step, and results obtained by applying the methodology presented.
+In this work, a finite element methodology for the simulation of fluid--structure interaction problems has been presented and verified through a series of classical benchmark cases. The formulation combines an ALE description of the fluid domain with structural dynamics solved through the finite element method, employing a partitioned coupling strategy. The obtained results demonstrated good agreement with reference solutions available in the literature, validating both the fluid and solid formulations, as well as the coupling strategy adopted. Finally, representative applications involving flow-induced structural vibrations were presented, illustrating the capability of the methodology to reproduce complex coupled dynamics.
 
 \section{Declaration of Interests}
 
@@ -1146,9 +1164,6 @@ The authors declare that they have no known competing financial interests or per
 
 \section{Acknowledgements}
 
-
-
-\bibliographystyle{alpha}
-\bibliography{sample}
+\printbibliography
 
 \end{document}
